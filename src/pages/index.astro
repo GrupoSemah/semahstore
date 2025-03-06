@@ -1,0 +1,25 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { DeviceList } from '@/components/react/DeviceList.jsx';
+import { FilterSidebar } from '@/components/react/FilterSidebar.jsx';
+import { getDevices } from '@/lib/device';
+
+const devices = await getDevices();
+---
+
+<Layout title="SEMAH Store">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Nuestros Productos</h1>
+    
+    <div class="flex flex-col md:flex-row gap-6">
+      <aside class="w-full md:w-1/4">
+        <FilterSidebar client:load />
+      </aside>
+      
+      <section class="w-full md:w-3/4">
+        <DeviceList devices={devices} client:load />
+      </section>
+    </div>
+  </main>
+</Layout>
+

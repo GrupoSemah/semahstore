@@ -1,0 +1,13 @@
+{
+  "devices": [
+    {
+      "name": "Ejemplo Dispositivo 1",
+      "description": "Descripción del dispositivo 1",
+      "price": 999.99,
+      "brand": "Marca Ejemplo",
+      "type": "Tipo Ejemplo",
+      "image": "https://ejemplo.com/imagen1.jpg",
+      "stock": 10
+    }
+  ]
+} 
