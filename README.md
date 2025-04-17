@@ -15,6 +15,9 @@ SEMAH Store es una plataforma de comercio electrónico moderna y robusta desarro
 - 🔍 **Búsqueda en Tiempo Real**: Búsqueda instantánea de productos
 - 📧 **Notificaciones por Email**: Sistema automatizado de confirmación de reservas
 - 💾 **Persistencia de Datos**: Base de datos PostgreSQL con Prisma ORM
+- 📋 **Gestión de Reservas**: Sistema completo con estados (pendiente, completado, cancelado)
+- 📊 **Exportación a Excel**: Exportación de datos de reservas para análisis
+- 🔄 **Control de Inventario**: Actualización automática al completar o cancelar reservas
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -75,6 +78,27 @@ npm run build
 
 Los archivos de la build se generarán en el directorio `dist/`.
 
+## 📋 Estructura del Proyecto
+
+```
+semahstore/
+├── prisma/            # Esquema de BD y migraciones
+├── public/            # Archivos estáticos
+├── src/
+│   ├── assets/        # Imágenes y recursos
+│   ├── components/    # Componentes reutilizables
+│   │   ├── export/    # Componentes para exportación de datos
+│   │   ├── react/     # Componentes específicos de React
+│   │   └── ui/        # Componentes de interfaz de usuario
+│   ├── layouts/       # Plantillas y estructuras de página
+│   ├── lib/           # Funciones y utilidades
+│   ├── pages/         # Páginas de la aplicación
+│   │   └── api/       # Endpoints de la API
+│   ├── store/         # Gestión de estado global
+│   └── styles/        # Estilos globales y temas
+└── scripts/          # Scripts de automatización
+```
+
 ## 📝 Scripts Disponibles
 
 - `npm run dev` - Inicia el servidor de desarrollo
@@ -83,12 +107,21 @@ Los archivos de la build se generarán en el directorio `dist/`.
 - `npm run import-devices` - Importa datos de dispositivos
 - `npm run astro` - Ejecuta comandos de Astro CLI
 
+## 💻 Requisitos del Sistema
+
+- Node.js 18.x o superior
+- PostgreSQL 14.x o superior
+- Navegador moderno con soporte para ES6
+- Mínimo 1GB de RAM para desarrollo local
+
 ## 🔐 Seguridad
 
 - Validación de stock en tiempo real
 - Protección contra desbordamiento de carrito
 - Sanitización de datos de entrada
 - Variables de entorno seguras
+- Confirmación en acciones críticas (cancelaciones, eliminaciones)
+- Control de acceso al panel de administración
 
 ## 🤝 Contribución
 

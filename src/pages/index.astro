@@ -2,7 +2,8 @@
 import Layout from '@/layouts/Layout.astro';
 import { DeviceList } from '@/components/react/DeviceList.jsx';
 import { FilterSidebar } from '@/components/react/FilterSidebar.jsx';
-import { getDevices } from '@/lib/device';
+import { WelcomeModal } from '@/components/react/WelcomeModal.jsx';
+import { getDevices } from '@/lib/device.js';
 
 const devices = await getDevices();
 ---
@@ -20,6 +21,8 @@ const devices = await getDevices();
         <DeviceList devices={devices} client:load />
       </section>
     </div>
+    
+    <WelcomeModal client:load />
   </main>
 </Layout>
 

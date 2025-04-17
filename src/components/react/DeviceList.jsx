@@ -10,9 +10,6 @@ export const DeviceList = ({ devices }) => {
   const [showOutOfStock, setShowOutOfStock] = useState(true)
 
   useEffect(() => {
-    console.log('Aplicando filtros:', filters)
-    console.log('Dispositivos originales:', devices)
-
     let result = [...devices]
 
     // Filtrar por búsqueda
@@ -24,19 +21,19 @@ export const DeviceList = ({ devices }) => {
         device.type.toLowerCase().includes(searchTerm) ||
         device.description.toLowerCase().includes(searchTerm)
       )
-      console.log('Después de filtrar por búsqueda:', result)
+      // Filtrado por búsqueda aplicado
     }
 
     // Filtrar por tipo
     if (filters.type && filters.type !== 'all') {
       result = result.filter(device => device.type === filters.type)
-      console.log('Después de filtrar por tipo:', result)
+      // Filtrado por tipo aplicado
     }
 
     // Filtrar por marca
     if (filters.brand && filters.brand !== 'all') {
       result = result.filter(device => device.brand === filters.brand)
-      console.log('Después de filtrar por marca:', result)
+      // Filtrado por marca aplicado
     }
 
     // Filtrar por precio mínimo
@@ -44,7 +41,7 @@ export const DeviceList = ({ devices }) => {
       const minPrice = Number(filters.minPrice)
       if (!isNaN(minPrice)) {
         result = result.filter(device => device.price >= minPrice)
-        console.log('Después de filtrar por precio mínimo:', result)
+        // Filtrado por precio mínimo aplicado
       }
     }
 
@@ -53,17 +50,17 @@ export const DeviceList = ({ devices }) => {
       const maxPrice = Number(filters.maxPrice)
       if (!isNaN(maxPrice)) {
         result = result.filter(device => device.price <= maxPrice)
-        console.log('Después de filtrar por precio máximo:', result)
+        // Filtrado por precio máximo aplicado
       }
     }
 
     // Filtrar por stock
     if (!showOutOfStock) {
       result = result.filter(device => device.stock > 0)
-      console.log('Después de filtrar por stock:', result)
+      // Filtrado por stock aplicado
     }
 
-    console.log('Resultado final filtrado:', result)
+    // Resultado final aplicando todos los filtros
     setFilteredDevices(result)
   }, [devices, filters, showOutOfStock])
 

@@ -6,13 +6,15 @@ import path from 'path';
 
 // https://astro.build/config
 export default defineConfig({
+  integrations: [react()],
+  // Configuración para resolver correctamente archivos JavaScript
   vite: {
     plugins: [tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve('./src')
-      }
+      },
+      extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx']
     }
-  },
-  integrations: [react()]
+  }
 });
