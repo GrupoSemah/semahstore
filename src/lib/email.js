@@ -8,10 +8,18 @@ export async function sendReservationEmail({ customer, items, total, reservation
     return
   }
 
+  // Correos de administradores (configurables)
+  const adminEmails = [
+    'it@almacenajes.net',
+    'xroberv@gmail.com',
+    process.env.ADMIN_EMAIL // Mantiene compatibilidad con la configuración existente
+  ]
+
+  // Combinamos el correo del cliente con los correos de administradores
   const recipients = [
     customer.email,
-    process.env.ADMIN_EMAIL
-  ].filter(Boolean)
+    ...adminEmails
+  ].filter(Boolean) // Elimina valores nulos o undefined
 
   if (!recipients.length) {
     console.error("No hay destinatarios válidos para el correo")

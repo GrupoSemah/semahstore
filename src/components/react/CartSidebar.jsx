@@ -2,6 +2,7 @@ import { useCart } from "@/store/cartStore"
 import { Trash, ShoppingCart } from "lucide-react"
 import { useState } from "react"
 import { ReservationForm } from "@/components/react/ReservationForm"
+import { ConfirmationModal } from "@/components/react/ConfirmationModal"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
@@ -75,14 +76,21 @@ export const CartSidebar = () => {
                       </Button>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => removeFromCart(item.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
+                  <ConfirmationModal
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    }
+                    title="Eliminar artículo"
+                    description={`¿Estás seguro de que deseas eliminar "${item.name}" del carrito?`}
+                    confirmLabel="Eliminar"
+                    onConfirm={() => removeFromCart(item.id)}
+                  />
                 </li>
               ))}
             </ul>
@@ -100,9 +108,17 @@ export const CartSidebar = () => {
               <Button className="w-full" onClick={() => setShowReservationForm(true)}>
                 Reservar Ahora
               </Button>
-              <Button variant="outline" className="w-full" onClick={clearCart}>
-                Vaciar Carrito
-              </Button>
+              <ConfirmationModal
+                trigger={
+                  <Button variant="outline" className="w-full">
+                    Vaciar Carrito
+                  </Button>
+                }
+                title="Vaciar carrito"
+                description="¿Estás seguro de que deseas vaciar todo el carrito? Esta acción no se puede deshacer."
+                confirmLabel="Vaciar"
+                onConfirm={clearCart}
+              />
             </div>
           </div>
         )}

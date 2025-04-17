@@ -6,8 +6,7 @@ function Toaster() {
       expand={false}
       richColors
       closeButton
-      position="top-right"
-      theme="light"
+      position="top-center"
       className="toaster group"
       toastOptions={{
         classNames: {

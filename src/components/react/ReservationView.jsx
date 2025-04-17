@@ -8,12 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -22,12 +16,23 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Loader2, CheckCircle2 } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { Loader2, CheckCircle2, XCircle, Eye } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ExportReservations } from "@/components/export/ExportReservations"
 
 export const ReservationView = () => {
   const [reservations, setReservations] = useState([])
@@ -35,10 +40,31 @@ export const ReservationView = () => {
   const [error, setError] = useState(null)
   const [selectedReservation, setSelectedReservation] = useState(null)
   const [statusUpdateDialog, setStatusUpdateDialog] = useState(null)
+  const [cancelDialog, setCancelDialog] = useState(null)
+  const [cancelReason, setCancelReason] = useState("")
   const [updating, setUpdating] = useState(false)
+  const [csrfToken, setCsrfToken] = useState(null)
 
   useEffect(() => {
     fetchReservations()
+  }, [])
+
+  useEffect(() => {
+    const fetchCSRFToken = async () => {
+      try {
+        const response = await fetch('/api/csrf')
+        const data = await response.json()
+        if (data && data.token) {
+          setCsrfToken(data.token)
+        } else {
+          console.error("No se pudo obtener el token CSRF")
+        }
+      } catch (error) {
+        console.error("Error al obtener token CSRF:", error)
+      }
+    }
+    
+    fetchCSRFToken()
   }, [])
 
   const fetchReservations = async () => {
@@ -63,6 +89,10 @@ export const ReservationView = () => {
 
   const handleStatusUpdate = async () => {
     if (!statusUpdateDialog) return
+    if (!csrfToken) {
+      toast.error("Error de seguridad: No se pudo obtener el token CSRF")
+      return
+    }
 
     const { reservationId, newStatus } = statusUpdateDialog
     setUpdating(true)
@@ -72,6 +102,7 @@ export const ReservationView = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken
         },
         body: JSON.stringify({
           id: reservationId,
@@ -101,6 +132,56 @@ export const ReservationView = () => {
     } finally {
       setUpdating(false)
       setStatusUpdateDialog(null)
+    }
+  }
+  
+  const handleCancelReservation = async () => {
+    if (!cancelDialog) return
+    if (!csrfToken) {
+      toast.error("Error de seguridad: No se pudo obtener el token CSRF")
+      return
+    }
+
+    const { reservationId } = cancelDialog
+    setUpdating(true)
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken
+        },
+        body: JSON.stringify({
+          id: reservationId,
+          status: "canceled",
+          cancellationReason: cancelReason.trim() || "Sin justificación",
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al cancelar la reserva")
+      }
+
+      // Actualizar la lista de reservas
+      setReservations((prevReservations) =>
+        prevReservations.map((reservation) =>
+          reservation.id === reservationId
+            ? { ...reservation, status: "canceled", cancellationReason: cancelReason }
+            : reservation
+        )
+      )
+
+      toast.success("Reserva cancelada correctamente")
+    } catch (error) {
+      console.error("Error:", error)
+      toast.error(error.message || "Error al cancelar la reserva")
+    } finally {
+      setUpdating(false)
+      setCancelDialog(null)
+      setCancelReason('')
     }
   }
 
@@ -138,7 +219,10 @@ export const ReservationView = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Reservas</h2>
-        <Button onClick={fetchReservations}>Actualizar</Button>
+        <div className="flex gap-2">
+          <ExportReservations reservations={reservations} />
+          <Button onClick={fetchReservations}>Actualizar</Button>
+        </div>
       </div>
 
       {reservations.length === 0 ? (
@@ -174,9 +258,19 @@ export const ReservationView = () => {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={reservation.status === "pending" ? "default" : "success"}
+                      variant={
+                        reservation.status === "pending" 
+                          ? "default" 
+                          : reservation.status === "completed"
+                            ? "success"
+                            : "destructive"
+                      }
                     >
-                      {reservation.status === "pending" ? "Pendiente" : "Completada"}
+                      {reservation.status === "pending" 
+                        ? "Pendiente" 
+                        : reservation.status === "completed"
+                          ? "Completada"
+                          : "Cancelada"}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatCurrency(reservation.total)}</TableCell>
@@ -192,20 +286,35 @@ export const ReservationView = () => {
                         <Eye className="h-4 w-4" />
                       </Button>
                       {reservation.status === "pending" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            setStatusUpdateDialog({
-                              reservationId: reservation.id,
-                              newStatus: "completed",
-                              code: reservation.code,
-                            })
-                          }
-                          title="Marcar como completada"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              setStatusUpdateDialog({
+                                reservationId: reservation.id,
+                                newStatus: "completed",
+                                code: reservation.code,
+                              })
+                            }
+                            title="Marcar como completada"
+                          >
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              setCancelDialog({
+                                reservationId: reservation.id,
+                                code: reservation.code,
+                              })
+                            }
+                            title="Cancelar reserva"
+                          >
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </TableCell>
@@ -223,10 +332,51 @@ export const ReservationView = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Detalles de la Reserva</DialogTitle>
+            <DialogDescription>
+              Información detallada de la reserva seleccionada.
+            </DialogDescription>
           </DialogHeader>
 
           {selectedReservation && (
-            <div className="space-y-6">
+            <div className="space-y-6 relative">
+              {selectedReservation.status === "completed" ? (
+                <div className="absolute inset-0 flex items-center justify-center z-10 overflow-hidden pointer-events-none">
+                  <div className="relative w-full h-full">
+                    <div 
+                      className="absolute transform rotate-[-35deg] bg-green-600/20 text-green-700 text-7xl font-extrabold tracking-wider uppercase flex items-center justify-center w-[150%] py-3"
+                      style={{ 
+                        top: '50%', 
+                        left: '-25%', 
+                        borderTop: '2px solid #16a34a',
+                        borderBottom: '2px solid #16a34a',
+                        textShadow: '2px 2px 4px rgba(0,128,0,0.2)',
+                        fontFamily: '"Impact", "Arial Black", sans-serif'
+                      }}
+                    >
+                      PAGADO
+                    </div>
+                  </div>
+                </div>
+              ) : selectedReservation.status === "canceled" ? (
+                <div className="absolute inset-0 flex items-center justify-center z-10 overflow-hidden pointer-events-none">
+                  <div className="relative w-full h-full">
+                    <div 
+                      className="absolute transform rotate-[-35deg] bg-red-600/20 text-white text-7xl font-extrabold tracking-wider uppercase flex items-center justify-center w-[150%] py-3"
+                      style={{ 
+                        top: '50%', 
+                        left: '-25%', 
+                        borderTop: '2px solid #dc2626',
+                        borderBottom: '2px solid #dc2626',
+                        textShadow: '2px 2px 4px rgba(220,38,38,0.2)',
+                        fontFamily: '"Impact", "Arial Black", sans-serif'
+                      }}
+                    >
+                      CANCELADO
+                    </div>
+                  </div>
+                </div>
+              ) : null}  
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-semibold mb-2">Información del Cliente</h4>
@@ -262,12 +412,16 @@ export const ReservationView = () => {
                         variant={
                           selectedReservation.status === "pending"
                             ? "default"
-                            : "success"
+                            : selectedReservation.status === "completed"
+                              ? "success"
+                              : "destructive"
                         }
                       >
                         {selectedReservation.status === "pending"
                           ? "Pendiente"
-                          : "Completada"}
+                          : selectedReservation.status === "completed"
+                            ? "Completada"
+                            : "Cancelada"}
                       </Badge>
                     </p>
                   </div>
@@ -323,6 +477,15 @@ export const ReservationView = () => {
                   </p>
                 </div>
               )}
+              
+              {selectedReservation.cancellationReason && (
+                <div>
+                  <h4 className="font-semibold mb-2 text-red-600">Motivo de cancelación</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedReservation.cancellationReason}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -345,7 +508,7 @@ export const ReservationView = () => {
             <AlertDialogAction
               onClick={handleStatusUpdate}
               disabled={updating}
-              className="bg-primary"
+              className="bg-primary text-white"
             >
               {updating ? (
                 <>
@@ -354,6 +517,56 @@ export const ReservationView = () => {
                 </>
               ) : (
                 "Confirmar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog
+        open={!!cancelDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCancelDialog(null);
+            setCancelReason('');
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar reserva</AlertDialogTitle>
+            <AlertDialogDescription>
+              Estás por cancelar la reserva {cancelDialog?.code}. Esta acción devolverá los productos al inventario.
+              Por favor, ingresa un motivo para la cancelación:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="cancel-reason" className="mb-2 block">Motivo de cancelación:</Label>
+            <Textarea
+              id="cancel-reason"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Ingresa el motivo por el cual se cancela esta reserva"
+              className="resize-none"
+              rows={3}
+            />
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={updating}>Volver</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelReservation}
+              disabled={updating}
+              className="bg-destructive text-foreground hover:bg-destructive/90"
+            >
+              {updating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                "Confirmar cancelación"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -3,6 +3,8 @@ export const prerender = false
 import { PrismaClient } from "@prisma/client"
 import { sendReservationEmail } from "@/lib/email"
 import { nanoid } from "nanoid"
+import { reservationSchema, reservationUpdateSchema, validateData } from "@/lib/validations"
+import { sanitizeObject } from "@/lib/sanitize"
 
 const prisma = new PrismaClient()
 
@@ -46,17 +48,29 @@ export async function GET() {
 
 export async function POST({ request }) {
   try {
-    console.log("Headers recibidos:", Object.fromEntries(request.headers))
+    // Verificar CSRF token
+    const csrfToken = request.headers.get('x-csrf-token');
+    if (!csrfToken) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Token CSRF no proporcionado",
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
+    }
+    
+    // Verificar Content-Type
     const contentType = request.headers.get("content-type")
-    console.log("Content-Type recibido:", contentType)
-
     if (!contentType || !contentType.toLowerCase().includes("application/json")) {
       return new Response(
         JSON.stringify({
           success: false,
           message: "Content-Type debe ser application/json",
           receivedContentType: contentType || "no especificado",
-          headers: Object.fromEntries(request.headers),
         }),
         {
           status: 400,
@@ -65,19 +79,18 @@ export async function POST({ request }) {
       )
     }
 
-    const rawBody = await request.text()
-    console.log("Body raw recibido:", rawBody)
-
-    let body
+    // Parsear y validar el cuerpo de la petición
+    let body;
     try {
-      body = JSON.parse(rawBody)
+      body = await request.json();
+      // Sanitizar datos para prevenir XSS
+      body = sanitizeObject(body);
     } catch (e) {
       return new Response(
         JSON.stringify({
           success: false,
           message: "Error al parsear JSON",
           error: e.message,
-          receivedBody: rawBody,
         }),
         {
           status: 400,
@@ -86,17 +99,28 @@ export async function POST({ request }) {
       )
     }
 
-    console.log("Body parseado:", body)
+    // Crear objeto de reserva con la estructura esperada por el esquema
+    const { customer, items, total, comments } = body;
+    const reservationData = {
+      customerName: customer?.name,
+      customerEmail: customer?.email,
+      customerPhone: customer?.phone,
+      comments: comments || null,
+      items: items?.map(item => ({
+        deviceId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      })) || []
+    };
 
-    const { customer, items, total } = body
-
-    // Validar datos requeridos
-    if (!customer?.name || !customer?.email || !customer?.phone || !items?.length || !total) {
+    // Validar datos con Zod
+    const validationResult = await reservationSchema.safeParse(reservationData);
+    if (!validationResult.success) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Faltan datos requeridos para la reserva",
-          details: { customer, itemsLength: items?.length, total },
+          message: "Datos de reserva inválidos",
+          errors: validationResult.error.format(),
         }),
         {
           status: 400,
@@ -219,24 +243,44 @@ export async function POST({ request }) {
 
 export async function PATCH({ request }) {
   try {
-    const { id, status } = await request.json()
-
-    if (!id || !status) {
+    // Verificar CSRF token
+    const csrfToken = request.headers.get('x-csrf-token');
+    if (!csrfToken) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Se requiere ID y estado de la reserva"
+          message: "Token CSRF no proporcionado",
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
+    }
+    
+    const body = await request.json()
+    
+    // Validar datos con Zod
+    const validationResult = await reservationUpdateSchema.safeParse(body);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Datos de actualización inválidos",
+          errors: validationResult.error.format(),
         }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         }
       )
     }
+    
+    const { reservationId, status } = body
 
-    const updatedReservation = await prisma.reservation.update({
-      where: { id },
-      data: { status },
+    // Obtener la reserva actual antes de actualizarla
+    const currentReservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
       include: {
         items: {
           include: {
@@ -244,7 +288,56 @@ export async function PATCH({ request }) {
           }
         }
       }
-    })
+    });
+
+    if (!currentReservation) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "No se encontró la reserva especificada"
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    // Preparar los datos para la actualización
+    const updateData = { status };
+    
+    // Si estamos cancelando, añadir el motivo de cancelación
+    if (status === "canceled" && cancellationReason) {
+      updateData.cancellationReason = cancellationReason;
+    }
+
+    // Actualizar la reserva
+    const updatedReservation = await prisma.reservation.update({
+      where: { id },
+      data: updateData,
+      include: {
+        items: {
+          include: {
+            device: true
+          }
+        }
+      }
+    });
+
+    // Si estamos cancelando, devolver los productos al inventario
+    if (status === "canceled") {
+      // Procesar cada item para actualizar el inventario
+      for (const item of currentReservation.items) {
+        await prisma.device.update({
+          where: { id: item.deviceId },
+          data: {
+            stock: {
+              increment: item.quantity
+            }
+          }
+        });
+      }
+    }
 
     return new Response(
       JSON.stringify({
