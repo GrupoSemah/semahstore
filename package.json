@@ -2,8 +2,12 @@
   "name": "semahstore",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
+    "vercel-build": "npm install @astrojs/vercel && astro build",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

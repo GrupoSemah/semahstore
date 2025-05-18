@@ -2,7 +2,6 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
-// Import Vercel adapter with the correct serverless target
 import vercel from '@astrojs/vercel/serverless';
 import path from 'path';
 
