@@ -52,7 +52,11 @@ export const ReservationView = () => {
   useEffect(() => {
     const fetchCSRFToken = async () => {
       try {
-        const response = await fetch('/api/csrf')
+        const response = await fetch('/api/csrf', {
+          headers: {
+            'x-api-key': import.meta.env.PUBLIC_API_KEY
+          }
+        })
         const data = await response.json()
         if (data && data.token) {
           setCsrfToken(data.token)
@@ -71,7 +75,11 @@ export const ReservationView = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch("/api/reservations")
+      const response = await fetch("/api/reservations", {
+        headers: {
+          'x-api-key': import.meta.env.PUBLIC_API_KEY
+        }
+      })
       const data = await response.json()
 
       if (!response.ok) {
