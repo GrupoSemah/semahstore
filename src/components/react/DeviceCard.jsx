@@ -26,7 +26,7 @@ export const DeviceCard = ({ device }) => {
         <img
           src={device.image || "/placeholder.svg"}
           alt={device.name}
-          className={`w-full h-full object-cover transition-transform ${isOutOfStock ? "" : "hover:scale-105"} duration-300`}
+          className={`w-full h-full object-contain transition-transform ${isOutOfStock ? "" : "hover:scale-102"} duration-300`}
         />
         {isOutOfStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

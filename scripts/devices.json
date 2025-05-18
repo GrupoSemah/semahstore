@@ -1,13 +1,76 @@
 {
   "devices": [
     {
-      "name": "Ejemplo Dispositivo 1",
-      "description": "Descripción del dispositivo 1",
-      "price": 999.99,
-      "brand": "Marca Ejemplo",
-      "type": "Tipo Ejemplo",
-      "image": "https://ejemplo.com/imagen1.jpg",
-      "stock": 10
+      "name": "Samsung Galaxy A12",
+      "description": "Pantalla sin rayones, color Azul, cable cargador, muy buen estado",
+      "price": 80,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/vivianaamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla sin rayones, color Gris Oscuro, cable cargador, muy buen estado",
+      "price": 80,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/rachelamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla sin rayones, color Gris Oscuro, cable cargador, muy buen estado",
+      "price": 80,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/claudiaamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla sin rayones, color Gris Oscuro, cover rosado, muy buen estado",
+      "price": 70,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/hatomamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla con golpe en pantalla, color Gris Oscuro, cover amarillo, funcional",
+      "price": 30,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/sanantamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla sin rayones, color Gris Oscuro, muy buen estado",
+      "price": 70,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/luzamd1.webp",
+      "stock": 6
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla leve rayones, color Gris Oscuro, cable cargador, muy buen estado",
+      "price": 80,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/quimeamd1.webp",
+      "stock": 1
+    },
+    {
+      "name": "Samsung Galaxy A13",
+      "description": "Pantalla sin rayones, color Azul, cable cargador y cabezote cargador, muy buen estado",
+      "price": 85,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/valeriaamd1.webp",
+      "stock": 1
     }
   ]
 } 

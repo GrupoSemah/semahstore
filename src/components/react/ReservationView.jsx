@@ -113,7 +113,7 @@ export const ReservationView = () => {
           "X-CSRF-Token": csrfToken
         },
         body: JSON.stringify({
-          id: reservationId,
+          reservationId: reservationId,
           status: newStatus,
         }),
       })
@@ -161,7 +161,7 @@ export const ReservationView = () => {
           "X-CSRF-Token": csrfToken
         },
         body: JSON.stringify({
-          id: reservationId,
+          reservationId: reservationId,
           status: "canceled",
           cancellationReason: cancelReason.trim() || "Sin justificación",
         }),
@@ -566,7 +566,7 @@ export const ReservationView = () => {
             <AlertDialogAction
               onClick={handleCancelReservation}
               disabled={updating}
-              className="bg-destructive text-foreground hover:bg-destructive/90"
+              className="bg-destructive text-white hover:bg-destructive/90"
             >
               {updating ? (
                 <>
