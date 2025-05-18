@@ -21,7 +21,11 @@ export const FilterSidebar = () => {
       setLoading(true)
       setError(null)
 
-      const response = await axios.get('/api/filters')
+      const response = await axios.get('/api/filters', {
+        headers: {
+          'x-api-key': import.meta.env.PUBLIC_API_KEY
+        }
+      })
       
       if (!response.data) {
         throw new Error("No se recibieron datos del servidor")
