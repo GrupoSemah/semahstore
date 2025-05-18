@@ -307,13 +307,13 @@ export async function PATCH({ request }) {
     const updateData = { status };
     
     // Si estamos cancelando, añadir el motivo de cancelación
-    if (status === "canceled" && cancellationReason) {
-      updateData.cancellationReason = cancellationReason;
+    if (status === "canceled" && body.cancellationReason) {
+      updateData.cancellationReason = body.cancellationReason;
     }
 
     // Actualizar la reserva
     const updatedReservation = await prisma.reservation.update({
-      where: { id },
+      where: { id: reservationId },
       data: updateData,
       include: {
         items: {
