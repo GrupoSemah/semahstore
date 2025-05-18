@@ -16,14 +16,31 @@ const ROUTE_LIMITS = {
   '/api/filters': 100, // Más permisos para filtros que son menos críticos
 };
 
-// Encabezados de seguridad para todas las respuestas HTML
+// Encabezados de seguridad mejorados para todas las respuestas HTML
 const securityHeaders = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'",
+  // Política CSP mejorada con más restricciones y opciones
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.vercel.app; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;",
+  
+  // Protección contra MIME sniffing
   'X-Content-Type-Options': 'nosniff',
+  
+  // Protección contra clickjacking
   'X-Frame-Options': 'SAMEORIGIN',
+  
+  // Protección XSS heredada (para navegadores antiguos)
   'X-XSS-Protection': '1; mode=block',
+  
+  // Política de referencia mejorada
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+  
+  // Restricciones de características del navegador
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), autoplay=(), document-domain=()',
+  
+  // HSTS para forzar HTTPS
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  
+  // Evitar información de versión del servidor
+  'Server': 'SEMAH-WebServer'
 };
 
 export const onRequest = defineMiddleware(async (context, next) => {
