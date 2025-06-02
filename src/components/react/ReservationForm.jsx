@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, AlertCircle, Loader2, Shield } from "lucide-react"
+import { Check, AlertCircle, Loader2, Shield, Tag } from "lucide-react"
 import { useCart } from "@/store/cartStore"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
@@ -71,6 +71,8 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
+  
+  // La funcionalidad de ofertar ahora está en el componente DeviceCard, al agregar al carrito
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -85,6 +87,18 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
     }
 
     try {
+      // Preparar los items con sus precios (originales o ofertados)
+      const itemsWithOffers = cartItems.map((item) => {
+        // Si el item tiene un precio ofertado, usarlo, sino usar el precio original
+        const price = item.offerPrice !== null ? item.offerPrice : item.price;
+        return {
+          id: item.id,
+          quantity: item.quantity,
+          price: price,
+          originalPrice: item.price, // Guardar el precio original
+        };
+      });
+      
       const reservationData = {
         customer: {
           name: formData.name,
@@ -92,12 +106,8 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
           phone: formData.phone,
           comments: formData.comments,
         },
-        items: cartItems.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        total,
+        items: itemsWithOffers,
+        total: total, // El total ya está calculado correctamente en el componente CartSidebar
       }
 
       const response = await axios.post("/api/reservations", reservationData, {
@@ -224,6 +234,43 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Sección de productos a reservar */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-medium">Productos a reservar</h3>
+                </div>
+                
+                <div className="space-y-3 max-h-48 overflow-y-auto p-1">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="border rounded-md p-3">
+                      <div className="flex justify-between mb-1">
+                        <span className="font-medium text-sm">{item.name}</span>
+                        <span className="text-sm">{item.quantity} {item.quantity > 1 ? 'unidades' : 'unidad'}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        {item.offerPrice !== null ? (
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1">
+                              <Tag className="h-3 w-3 text-green-600" />
+                              <p className="text-sm font-medium text-green-600">
+                                ${item.offerPrice.toLocaleString()} <span className="text-xs">(ofertado)</span>
+                              </p>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-through">
+                              Precio original: ${item.price.toLocaleString()}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            Precio: ${item.price.toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre Completo *</Label>
                 <Input
@@ -285,7 +332,10 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
                 <Button type="button" variant="outline" onClick={handleClose}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

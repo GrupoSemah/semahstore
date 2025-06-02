@@ -1,5 +1,5 @@
 import { useCart } from "@/store/cartStore"
-import { Trash, ShoppingCart } from "lucide-react"
+import { Trash, ShoppingCart, Tag } from "lucide-react"
 import { useState } from "react"
 import { ReservationForm } from "@/components/react/ReservationForm"
 import { ConfirmationModal } from "@/components/react/ConfirmationModal"
@@ -13,7 +13,11 @@ export const CartSidebar = () => {
   const { isOpen, setOpen } = useSheetStore()
   const [showReservationForm, setShowReservationForm] = useState(false)
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const total = cart.reduce((sum, item) => {
+    // Usar el precio ofertado si existe, de lo contrario usar el precio original
+    const price = item.offerPrice !== null ? item.offerPrice : item.price
+    return sum + price * item.quantity
+  }, 0)
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0)
 
   return (
@@ -55,7 +59,21 @@ export const CartSidebar = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">${item.price.toLocaleString()}</p>
+                    {item.offerPrice !== null ? (
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1">
+                          <Tag className="h-3 w-3 text-green-600" />
+                          <p className="text-sm font-medium text-green-600">
+                            ${item.offerPrice.toLocaleString()} <span className="text-xs">(ofertado)</span>
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-through">
+                          Precio original: ${item.price.toLocaleString()}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">${item.price.toLocaleString()}</p>
+                    )}
                     <div className="flex items-center mt-2">
                       <Button
                         variant="outline"

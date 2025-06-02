@@ -109,7 +109,8 @@ export async function POST({ request }) {
       items: items?.map(item => ({
         deviceId: item.id,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
+        originalPrice: item.originalPrice || item.price // Utilizar originalPrice si existe, sino el mismo precio
       })) || []
     };
 
@@ -165,6 +166,7 @@ export async function POST({ request }) {
               create: items.map((item) => ({
                 quantity: item.quantity,
                 price: item.price,
+                originalPrice: item.originalPrice || item.price, // Guardar el precio original
                 deviceId: item.id,
               })),
             },
