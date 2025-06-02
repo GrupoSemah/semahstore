@@ -20,6 +20,9 @@ export const reservationSchema = z.object({
     price: z.number().positive({
       message: "El precio debe ser un valor positivo"
     }),
+    originalPrice: z.number().positive({
+      message: "El precio original debe ser un valor positivo"
+    }).optional(),
     device: z.object({
       id: z.string(),
       name: z.string(),

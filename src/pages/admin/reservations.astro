@@ -1,11 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { ReservationView } from '../../components/react/ReservationView';
+import { AmountCards } from '../../components/react/AmountCards';
 import { Toaster } from '../../components/ui/sonner';
 ---
 
 <Layout title="Administración de Reservas - SEMAH Store">
   <main class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Administración de Reservas</h1>
+    
+    <AmountCards client:load />
+    
+    <div class="mb-4">
+      <h2 class="text-xl font-semibold mb-2">Listado de Reservas</h2>
+      <p class="text-sm text-muted-foreground">Gestione las reservas realizadas por los clientes</p>
+    </div>
+    
     <ReservationView client:load />
     <Toaster client:load />
   </main>

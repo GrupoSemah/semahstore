@@ -39,7 +39,8 @@ model Reservation {
 model ReservationItem {
   id            String      @id @default(cuid())
   quantity      Int
-  price         Float
+  price         Float       // Precio ofertado o final
+  originalPrice Float?      // Precio original del producto
   reservationId String
   deviceId      String
   device        Device      @relation(fields: [deviceId], references: [id])

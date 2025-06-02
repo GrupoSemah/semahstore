@@ -14,7 +14,7 @@ import { persist } from "zustand/middleware"
  */
 
 /**
- * @typedef {Device & { quantity: number }} CartItem
+ * @typedef {Device & { quantity: number, offerPrice: number|null }} CartItem
  */
 
 /**
@@ -49,8 +49,9 @@ const createCartStore = (set, get) => ({
   /**
    * Añade un producto al carrito
    * @param {Device} item - Producto a añadir
+   * @param {number|null} offerPrice - Precio ofertado (opcional)
    */
-  addToCart: (item) => {
+  addToCart: (item, offerPrice = null) => {
     // Check if item has stock
     if (item.stock <= 0) {
       console.error("Cannot add item with no stock")
@@ -61,6 +62,15 @@ const createCartStore = (set, get) => ({
     const existingItem = cart.find((cartItem) => cartItem.id === item.id)
 
     if (existingItem) {
+      // Si ya existe el item y se está añadiendo con un precio ofertado diferente,
+      // creamos un nuevo item en lugar de incrementar la cantidad
+      if (offerPrice !== null && existingItem.offerPrice !== offerPrice) {
+        set({ 
+          cart: [...cart, { ...item, quantity: 1, offerPrice }] 
+        })
+        return
+      }
+
       // Check if we have enough stock for the increased quantity
       if (existingItem.quantity + 1 > item.stock) {
         console.error("Cannot add more items than available in stock")
@@ -72,7 +82,7 @@ const createCartStore = (set, get) => ({
       )
       set({ cart: updatedCart })
     } else {
-      set({ cart: [...cart, { ...item, quantity: 1 }] })
+      set({ cart: [...cart, { ...item, quantity: 1, offerPrice }] })
     }
   },
 
