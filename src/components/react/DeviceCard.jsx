@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { toast } from "sonner"
 import { useSheetStore } from "@/store/sheetStore"
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -16,6 +16,7 @@ export const DeviceCard = ({ device }) => {
   const { setOpen } = useSheetStore()
   const [descriptionDialogOpen, setDescriptionDialogOpen] = useState(false)
   const [offerDialogOpen, setOfferDialogOpen] = useState(false)
+  const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [offerPrice, setOfferPrice] = useState(device.price)
   const [offerError, setOfferError] = useState('')
   const isOutOfStock = device.stock <= 0
@@ -77,7 +78,10 @@ export const DeviceCard = ({ device }) => {
   return (
     <>
       <Card className={`h-full flex flex-col ${isOutOfStock ? "opacity-70" : ""}`}>
-        <div className="aspect-square w-full relative overflow-hidden rounded-t-lg">
+        <div 
+          className="aspect-square w-full relative overflow-hidden rounded-t-lg cursor-pointer"
+          onClick={() => setImageDialogOpen(true)}
+        >
           <img
             src={device.image || "/placeholder.svg"}
             alt={device.name}
@@ -238,6 +242,46 @@ export const DeviceCard = ({ device }) => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para vista ampliada de imagen */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent className="max-w-[95vw] w-full sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl h-auto max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{device.name}</DialogTitle>
+            <DialogDescription>
+              {device.brand} - {device.type}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-2 h-full">
+            <img
+              src={device.image || "/placeholder.svg"}
+              alt={device.name}
+              className="w-full h-full object-contain max-h-[calc(90vh-10rem)]"
+            />
+          </div>
+          <DialogFooter className="flex justify-between items-center">
+            <div>
+              <span className="font-medium">${device.price.toLocaleString()}</span>
+              {device.stock <= 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  Sin Stock
+                </Badge>
+              )}
+              {device.stock > 0 && (
+                <Badge variant="outline" className="ml-2">
+                  Stock: {device.stock}
+                </Badge>
+              )}
+            </div>
+            {device.stock > 0 && (
+              <Button onClick={handleOpenOfferDialog} size="sm">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Agregar al carrito
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
