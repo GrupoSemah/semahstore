@@ -42,9 +42,9 @@ export const WelcomeModal = () => {
             <div>
               <h3 className="font-medium">Como realizo mi reserva?</h3>
               <p className="text-sm text-muted-foreground">
-                Para reservar un equipo, debes contactar a Carla Ferrer, quien
-                te enviará un link de pago. Aceptamos efectivo, tarjetas
-                Visa/Mastercard, Yappy y descuento directo para tu comodidad.
+                Para reservar debes agrear a tu carrito el producto deseado,
+                al agregarlo, te pedira elegir si pagar el total o puedes ofertar!,
+                cuando tus productos esten en el carrito procede a enviarlo llenando el formulario.
               </p>
             </div>
           </div>
@@ -73,8 +73,9 @@ export const WelcomeModal = () => {
               <h3 className="font-medium">Proceso de compra simple</h3>
               <p className="text-sm text-muted-foreground">
                 Tras realizar tu reserva, recibirás un correo electrónico con
-                los detalles. Completa el pago y listo - tus equipos estarán
-                apartados para ti.
+                los detalles. Coordina el pago y listo tus productos estarán
+                apartados para ti. Puedes pagar con efecto, descuento directo
+                o con tarjeta de crédito.
               </p>
             </div>
           </div>
