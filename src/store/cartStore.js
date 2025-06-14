@@ -1,58 +1,11 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-/**
- * @typedef {Object} Device
- * @property {string} id - ID único del dispositivo
- * @property {string} name - Nombre del dispositivo
- * @property {string} description - Descripción del dispositivo
- * @property {number} price - Precio del dispositivo
- * @property {string} brand - Marca del dispositivo
- * @property {string} type - Tipo de dispositivo
- * @property {string} image - URL de la imagen del dispositivo
- * @property {number} stock - Stock disponible
- */
-
-/**
- * @typedef {Device & { quantity: number, offerPrice: number|null }} CartItem
- */
-
-/**
- * @typedef {Object} InvalidStockItem
- * @property {string} id - ID del item
- * @property {string} name - Nombre del item
- * @property {number} requestedQuantity - Cantidad solicitada
- * @property {number} availableStock - Stock disponible
- */
-
-/**
- * @typedef {Object} CartValidationResult
- * @property {boolean} valid - Si el carrito es válido
- * @property {InvalidStockItem[]} invalidItems - Items con problemas de stock
- */
-
-/**
- * @typedef {Object} CartStore
- * @property {CartItem[]} cart - Items en el carrito
- * @property {function(Device): void} addToCart - Añade un item al carrito
- * @property {function(string): void} removeFromCart - Elimina un item del carrito
- * @property {function(string, number): void} updateQuantity - Actualiza la cantidad de un item
- * @property {function(): void} clearCart - Limpia el carrito
- * @property {function(): Promise<CartValidationResult>} validateCart - Valida el carrito contra el stock
- */
-
-/** @type {import("zustand").StateCreator<CartStore>} */
 const createCartStore = (set, get) => ({
-  /** @type {CartItem[]} */
   cart: [],
 
-  /**
-   * Añade un producto al carrito
-   * @param {Device} item - Producto a añadir
-   * @param {number|null} offerPrice - Precio ofertado (opcional)
-   */
   addToCart: (item, offerPrice = null) => {
-    // Check if item has stock
+
     if (item.stock <= 0) {
       console.error("Cannot add item with no stock")
       return
@@ -62,16 +15,13 @@ const createCartStore = (set, get) => ({
     const existingItem = cart.find((cartItem) => cartItem.id === item.id)
 
     if (existingItem) {
-      // Si ya existe el item y se está añadiendo con un precio ofertado diferente,
-      // creamos un nuevo item en lugar de incrementar la cantidad
+
       if (offerPrice !== null && existingItem.offerPrice !== offerPrice) {
         set({ 
           cart: [...cart, { ...item, quantity: 1, offerPrice }] 
         })
         return
       }
-
-      // Check if we have enough stock for the increased quantity
       if (existingItem.quantity + 1 > item.stock) {
         console.error("Cannot add more items than available in stock")
         return
@@ -86,25 +36,17 @@ const createCartStore = (set, get) => ({
     }
   },
 
-  /**
-   * Elimina un producto del carrito
-   * @param {string} id - ID del producto a eliminar
-   */
+
   removeFromCart: (id) => {
     const { cart } = get()
     set({ cart: cart.filter((item) => item.id !== id) })
   },
 
-  /**
-   * Actualiza la cantidad de un producto en el carrito
-   * @param {string} id - ID del producto a actualizar
-   * @param {number} quantity - Nueva cantidad
-   */
+
   updateQuantity: (id, quantity) => {
     const { cart } = get()
     const item = cart.find((item) => item.id === id)
 
-    // Check if we have enough stock
     if (item && quantity > item.stock) {
       console.error("Cannot add more items than available in stock")
       return
@@ -115,19 +57,12 @@ const createCartStore = (set, get) => ({
     })
   },
 
-  /** Limpia el carrito */
   clearCart: () => set({ cart: [] }),
 
-  /**
-   * Valida el carrito contra el stock actual
-   * @returns {Promise<CartValidationResult>} Resultado de la validación
-   */
   validateCart: async () => {
     const { cart } = get()
     const invalidItems = []
 
-    // This would typically fetch current stock from the server
-    // For now, we'll just check against the stock we have in the cart
     for (const item of cart) {
       if (item.quantity > item.stock) {
         invalidItems.push({
@@ -146,10 +81,6 @@ const createCartStore = (set, get) => ({
   },
 })
 
-/**
- * Hook para gestionar el carrito de compras
- * @type {CartStore}
- */
 export const useCart = create(
   persist(
     createCartStore,
