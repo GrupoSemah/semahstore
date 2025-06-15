@@ -74,7 +74,7 @@ export const WelcomeModal = () => {
               <p className="text-sm text-muted-foreground">
                 Tras realizar tu reserva, recibirás un correo electrónico con
                 los detalles. Coordina el pago y listo tus productos estarán
-                apartados para ti. Puedes pagar con efecto, descuento directo
+                apartados para ti. Puedes pagar con efectivo, descuento directo
                 o con tarjeta de crédito.
               </p>
             </div>
