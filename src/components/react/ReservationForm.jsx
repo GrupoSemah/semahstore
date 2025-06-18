@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useSheetStore } from "@/store/sheetStore"
+import { toast } from "sonner"
 
 export const ReservationForm = ({ onClose, cartItems, total }) => {
   const { clearCart, validateCart } = useCart()
@@ -23,6 +24,7 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [reservationCode, setReservationCode] = useState(null)
+  const [offersCreated, setOffersCreated] = useState(false)
   const [error, setError] = useState(null)
   const [stockValidation, setStockValidation] = useState({ valid: true, invalidItems: [] })
   const [isOpen, setIsOpen] = useState(true)
@@ -89,25 +91,28 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
     try {
       // Preparar los items con sus precios (originales o ofertados)
       const itemsWithOffers = cartItems.map((item) => {
-        // Si el item tiene un precio ofertado, usarlo, sino usar el precio original
-        const price = item.offerPrice !== null ? item.offerPrice : item.price;
+        // Asegurarse que los precios sean números válidos
+        const originalPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+        let price = originalPrice;
+        
+        if (item.offerPrice !== null && item.offerPrice !== undefined) {
+          price = typeof item.offerPrice === 'number' ? item.offerPrice : parseFloat(item.offerPrice) || originalPrice;
+        }
+        
         return {
-          id: item.id,
-          quantity: item.quantity,
+          deviceId: item.id, // Asegurar que usamos deviceId para coincidir con el esquema
+          quantity: parseInt(item.quantity) || 1,
           price: price,
-          originalPrice: item.price, // Guardar el precio original
+          originalPrice: originalPrice,
         };
       });
       
       const reservationData = {
-        customer: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          comments: formData.comments,
-        },
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        comments: formData.comments || "",
         items: itemsWithOffers,
-        total: total, // El total ya está calculado correctamente en el componente CartSidebar
       }
 
       const response = await axios.post("/api/reservations", reservationData, {
@@ -123,7 +128,33 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
       }
 
       setReservationCode(response.data.reservationCode)
+      // Almacenar información sobre ofertas creadas
+      setOffersCreated(response.data.offersCreated || false)
       clearCart()
+      
+      // Mostrar notificación de éxito con Sonner
+      if (response.data.offersCreated) {
+        toast.success("Oferta enviada con éxito", {
+          description: "Tu oferta ha sido enviada y está pendiente de aprobación.",
+          duration: 5000
+        });
+      } else {
+        toast.success("Reserva completada con éxito", {
+          description: `Tu código de reserva es: ${response.data.reservationCode}`,
+          duration: 5000
+        });
+      }
+      
+      // Cerrar modal después de mostrar brevemente el mensaje de éxito
+      setTimeout(() => {
+        setIsOpen(false);
+        if (onClose) onClose();
+        
+        // Redireccionar a la página principal
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
+      }, 1500)
     } catch (error) {
       console.error("Error detallado:", error)
       setError(error.message || "Error al procesar la reserva")
@@ -134,11 +165,13 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
 
   const handleClose = () => {
     if (reservationCode) {
+      // Redireccionar a la página principal
       setOpen(false)
-      onClose()
+      if (onClose) onClose()
       window.location.href = "/"
     } else {
-      onClose()
+      setIsOpen(false)
+      if (onClose) onClose()
     }
   }
 
@@ -207,16 +240,29 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       {reservationCode ? (
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <div className="text-center py-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="h-8 w-8 text-green-600" />
             </div>
             <h2 className="text-2xl font-semibold mb-2">¡Reserva Exitosa!</h2>
-            <p className="mb-4">
+            <p className="mb-2">
               Tu código de reserva es: <span className="font-mono font-bold">{reservationCode}</span>
             </p>
-            <p className="text-sm text-muted-foreground mb-6">Hemos enviado los detalles a tu correo electrónico.</p>
+            
+            {offersCreated && (
+              <Alert className="mt-4 mb-2 bg-amber-50">
+                <div className="flex items-start gap-2">
+                  <Tag className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <AlertDescription className="text-left">
+                    <p className="font-medium">Tienes ofertas pendientes de aprobación</p>
+                    <p className="text-sm">Algunos productos en tu carrito fueron agregados como ofertas y están pendientes de revisión por nuestro equipo. Te notificaremos por correo cuando sean aprobadas o rechazadas.</p>
+                  </AlertDescription>
+                </div>
+              </Alert>
+            )}
+            
+            <p className="text-sm text-muted-foreground mt-4 mb-6">Hemos enviado los detalles a tu correo electrónico.</p>
             <Button onClick={handleClose}>Cerrar</Button>
           </div>
         </DialogContent>

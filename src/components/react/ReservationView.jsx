@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, XCircle, Eye } from "lucide-react"
+import { Loader2, CheckCircle2, XCircle, Eye, Tag } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
@@ -248,6 +248,7 @@ export const ReservationView = () => {
                 <TableHead>Estado</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Fecha</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -283,6 +284,15 @@ export const ReservationView = () => {
                   </TableCell>
                   <TableCell>{formatCurrency(reservation.total)}</TableCell>
                   <TableCell>{formatDate(reservation.createdAt)}</TableCell>
+                  <TableCell>
+                    {reservation.offerId ? (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Tag size={12} /> Oferta
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">Precio de lista</Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -339,7 +349,14 @@ export const ReservationView = () => {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detalles de la Reserva</DialogTitle>
+            <DialogTitle>
+              Detalles de la Reserva
+              {selectedReservation?.offerId && (
+                <Badge variant="secondary" className="ml-2 flex items-center gap-1 text-xs">
+                  <Tag size={12} /> Oferta aceptada
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
               Información detallada de la reserva seleccionada.
             </DialogDescription>

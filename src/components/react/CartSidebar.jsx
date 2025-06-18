@@ -117,6 +117,41 @@ export const CartSidebar = () => {
 
         {cart.length > 0 && (
           <div className="border-t pt-4">
+            {/* Resumen de productos */}
+            <div className="mb-4">
+              {/* Verificar si hay productos con oferta */}
+              {cart.some(item => item.offerPrice !== null && item.offerPrice !== item.price) && (
+                <div className="p-3 mb-3 bg-amber-50 rounded-md border border-amber-200">
+                  <div className="flex items-start gap-2">
+                    <Tag className="h-4 w-4 mt-1 text-amber-600" />
+                    <div>
+                      <p className="font-medium text-sm">Tienes productos con ofertas</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Las ofertas quedarán pendientes hasta ser aprobadas por un administrador.
+                        Solo se generará una reserva inmediata para los productos a precio de lista.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Conteo de productos por tipo */}
+              <div className="flex gap-3 mb-3 text-sm">
+                <div className="flex-1">
+                  <p className="text-muted-foreground">Productos precio lista:</p>
+                  <p className="font-medium">
+                    {cart.filter(item => item.offerPrice === null || item.offerPrice === item.price).length || 0}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-muted-foreground">Productos con oferta:</p>
+                  <p className="font-medium">
+                    {cart.filter(item => item.offerPrice !== null && item.offerPrice !== item.price).length || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             <div className="flex justify-between mb-4">
               <span className="font-semibold">Total:</span>
               <span className="font-bold">${total.toLocaleString()}</span>

@@ -19,6 +19,7 @@ model Device {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   reservationItems ReservationItem[]
+  offers           Offer[]
 }
 
 model Reservation {
@@ -34,6 +35,8 @@ model Reservation {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   items              ReservationItem[]
+  offerId            String?           // ID de la oferta si la reserva fue generada desde una oferta
+  offer              Offer?            @relation(fields: [offerId], references: [id])
 }
 
 model ReservationItem {
@@ -45,4 +48,22 @@ model ReservationItem {
   deviceId      String
   device        Device      @relation(fields: [deviceId], references: [id])
   reservation   Reservation @relation(fields: [reservationId], references: [id])
+}
+
+model Offer {
+  id            String       @id @default(cuid())
+  customerName  String
+  customerEmail String
+  customerPhone String
+  comments      String?
+  offerPrice    Float        // Precio ofertado
+  originalPrice Float        // Precio original
+  quantity      Int
+  status        String       @default("pending") // pending, accepted, rejected
+  deviceId      String
+  device        Device       @relation(fields: [deviceId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  rejectionReason String?    // Razón de rechazo si aplica
+  reservations  Reservation[]
 }

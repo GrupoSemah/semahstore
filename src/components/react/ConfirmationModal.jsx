@@ -58,7 +58,7 @@ export const ConfirmationModal = ({
             onClick={handleConfirm}
             className={
               confirmVariant === "destructive"
-                ? "bg-destructive text-foreground hover:bg-destructive/90"
+                ? "bg-destructive text-white hover:bg-destructive/90"
                 : ""
             }
           >
