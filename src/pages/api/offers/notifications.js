@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { sendEmail } from "../../../lib/email"
-import { generateCsrfToken, validateCsrfToken } from "@/lib/csrf"
+import { validateCSRFToken, createCSRFToken } from "@/lib/csrf"
 
 const prisma = new PrismaClient()
 
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   switch (method) {
     case "GET":
-      return await generateCsrfToken(req, res)
+      return await handleGenerateToken(req, res)
     case "POST":
       return await sendOfferNotification(req, res)
     default:
@@ -22,12 +22,31 @@ export default async function handler(req, res) {
 }
 
 /**
+ * Genera y devuelve un token CSRF
+ */
+async function handleGenerateToken(req, res) {
+  const sessionId = req.headers.get('authorization') || 'default_session';
+  const token = createCSRFToken(sessionId);
+  
+  return new Response(
+    JSON.stringify({ 
+      token,
+      success: true 
+    }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    }
+  );
+}
+
+/**
  * Envía notificación por correo al cliente sobre el estado de su oferta
  */
 async function sendOfferNotification(req, res) {
   try {
     // Validar CSRF token
-    if (!validateCsrfToken(req)) {
+    if (!validateCSRFToken(req.headers.get('x-csrf-token'), req.headers.get('authorization'))) {
       return res.status(403).json({ success: false, message: "Token CSRF inválido" })
     }
 
