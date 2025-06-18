@@ -2,6 +2,26 @@ import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+export async function sendEmail({ to, subject, html }) {
+  if (!process.env.RESEND_API_KEY) {
+    console.error("RESEND_API_KEY no está configurada")
+    return
+  }
+
+  try {
+    await resend.emails.send({
+      from: 'SEMAH Store <onboarding@resend.dev>',
+      to,
+      subject,
+      html,
+    })
+    console.log(`Correo enviado exitosamente a ${to}`)
+  } catch (error) {
+    console.error('Error al enviar el correo:', error)
+    throw error
+  }
+}
+
 export async function sendReservationEmail({ customer, items, total, reservationCode }) {
   if (!process.env.RESEND_API_KEY) {
     console.error("RESEND_API_KEY no está configurada")
@@ -10,8 +30,9 @@ export async function sendReservationEmail({ customer, items, total, reservation
 
   // Correos de administradores (configurables)
   const adminEmails = [
-    'it@almacenajes.net',
-    'xroberv@gmail.com',
+    'it@semah.com',
+    'cferrer@semah.com',
+    'mmora@semah.com',
     process.env.ADMIN_EMAIL // Mantiene compatibilidad con la configuración existente
   ]
 
