@@ -273,9 +273,23 @@ export async function POST({ request }) {
         })
       }
 
-      // Enviar correo de confirmación solo si hay items de precio de lista
-      if (listPriceItems.length > 0) {
+      // Enviar correo de confirmación cuando se crea una reserva directa
+      if (reservation) {
         try {
+          // Obtener los detalles completos de los dispositivos para el correo
+          const deviceDetails = await Promise.all(listPriceItems.map(async (item) => {
+            const device = await prisma.device.findUnique({
+              where: { id: item.deviceId },
+              select: { name: true }
+            });
+            return {
+              name: device?.name || 'Producto',
+              price: item.price,
+              quantity: item.quantity,
+              total: item.price * item.quantity,
+            };
+          }));
+
           await sendReservationEmail({
             customer: {
               name: reservationData.customerName,
@@ -283,15 +297,13 @@ export async function POST({ request }) {
               phone: reservationData.customerPhone,
               comments: reservationData.comments
             },
-            items: listPriceItems.map((item) => ({
-              ...item,
-              total: item.price * item.quantity,
-            })),
+            items: deviceDetails,
             total: listPriceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
             reservationCode,
-          })
+          });
+          console.log(`Correo de reserva enviado exitosamente para el código: ${reservationCode}`);
         } catch (emailError) {
-          console.error("Error al enviar el correo:", emailError)
+          console.error("Error al enviar el correo de reserva:", emailError);
           // Continuamos aunque falle el envío del correo
         }
       }

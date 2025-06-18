@@ -4,6 +4,7 @@ import { ReservationView } from '../../components/react/ReservationView';
 import { AmountCards } from '../../components/react/AmountCards';
 import { Toaster } from '../../components/ui/sonner';
 import AdminNavbar from '../../components/AdminNavbar.astro';
+import { AuthModal } from '../../components/react/AuthModal';
 ---
 
 <Layout title="Administración de Reservas - SEMAH Store">
@@ -21,5 +22,6 @@ import AdminNavbar from '../../components/AdminNavbar.astro';
     
     <ReservationView client:load />
     <Toaster client:load />
+    <AuthModal client:load />
   </main>
 </Layout> 

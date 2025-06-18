@@ -24,17 +24,52 @@ const prisma = new PrismaClient();
 
 /**
  * Obtiene todos los dispositivos ordenados por fecha de creación
- * @returns {Promise<Device[]>} Lista de dispositivos
+ * @returns {Promise<Device[]>} Lista de dispositivos con el conteo de ofertas pendientes
  */
 export async function getDevices() {
   try {
     const devices = await prisma.device.findMany({
+      include: {
+        offers: {
+          where: {
+            status: "pending"
+          }
+        }
+      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return devices;
+    // Agregar el contador de ofertas pendientes y la oferta más alta a cada dispositivo
+    const processedDevices = devices.map(device => {
+      // Aseguramos que offers sea un array
+      const offers = Array.isArray(device.offers) ? device.offers : [];
+      
+      // Encontrar la oferta con el monto más alto (usando offerPrice)
+      let highestOffer = 0;
+      if (offers.length > 0) {
+        // Aseguramos que solo consideramos valores numéricos válidos
+        const validAmounts = offers
+          .map(offer => offer.offerPrice) // Accedemos a offerPrice, no a amount
+          .filter(amount => typeof amount === 'number' && !isNaN(amount));
+          
+        if (validAmounts.length > 0) {
+          highestOffer = Math.max(...validAmounts);
+        }
+      }
+      
+      // Crear un nuevo objeto con las propiedades necesarias
+      return {
+        ...device,
+        pendingOffersCount: offers.length || 0,
+        highestOfferAmount: highestOffer,
+        offers: undefined // Eliminamos el array de ofertas completo para no enviarlo al cliente
+      };
+    });
+    
+    // Retornamos los dispositivos con su contador de ofertas pendientes
+    return processedDevices;
   } catch (error) {
     console.error("Error fetching devices:", error);
     return [];

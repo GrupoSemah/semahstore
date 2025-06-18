@@ -117,9 +117,24 @@ export const DeviceCard = ({ device }) => {
               Stock: {device.stock}
             </Badge>
           </div>
+          
+          {/* Información de ofertas pendientes */}
+          {device.pendingOffersCount > 0 && (
+            <div className="mt-2 bg-green-50 p-2 rounded-md border border-green-100">
+              <span className="text-xs font-medium text-green-700 flex items-center gap-1">
+                <Tag className="h-3 w-3" /> 
+                {device.pendingOffersCount} {device.pendingOffersCount === 1 ? "oferta" : "ofertas"}
+                <span className="ml-1">
+                  (Mayor: ${typeof device.highestOfferAmount === 'number' ? device.highestOfferAmount.toLocaleString() : '0'})
+                </span>
+              </span>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between items-center pt-2">
-          <span className="text-xl font-bold">${device.price.toLocaleString()}</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold">${device.price.toLocaleString()}</span>
+          </div>
 
           {isOutOfStock ? (
             <TooltipProvider>
@@ -201,28 +216,6 @@ export const DeviceCard = ({ device }) => {
                 <h3 className="font-medium flex items-center"><DollarSign className="h-4 w-4 mr-2" />Precio actual</h3>
                 <span className="font-semibold">${device.price.toLocaleString()}</span>
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="offerPrice">Tu oferta</Label>
-              <div className="flex gap-2 items-center mt-1">
-                <Input
-                  id="offerPrice"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={offerPrice}
-                  onChange={handleOfferPriceChange}
-                  className={offerError ? "border-red-500" : ""}
-                />
-                <span className="text-sm font-medium">$</span>
-              </div>
-              {offerError && (
-                <p className="text-red-500 text-sm mt-1">{offerError}</p>
-              )}
-              <p className="text-sm text-muted-foreground mt-1">
-                Puedes ofertar un precio diferente. El precio debe ser al menos el 50% del precio original.
-              </p>
             </div>
 
             <div className="flex justify-between gap-2 mt-2">
