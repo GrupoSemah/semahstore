@@ -99,20 +99,61 @@ export async function POST({ request }) {
       )
     }
 
-    // Crear objeto de reserva con la estructura esperada por el esquema
-    const { customer, items, total, comments } = body;
-    const reservationData = {
-      customerName: customer?.name,
-      customerEmail: customer?.email,
-      customerPhone: customer?.phone,
-      comments: comments || null,
-      items: items?.map(item => ({
-        deviceId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-        originalPrice: item.originalPrice || item.price // Utilizar originalPrice si existe, sino el mismo precio
-      })) || []
-    };
+    // Comprobar si estamos recibiendo la estructura antigua o la nueva
+    // (estructura antigua tiene customer anidado, nueva tiene customerName directo)
+    let reservationData;
+    
+    // Si los campos ya vienen aplanados del cliente
+    if (body.customerName && body.customerEmail && body.items) {
+      reservationData = {
+        customerName: body.customerName,
+        customerEmail: body.customerEmail,
+        customerPhone: body.customerPhone,
+        comments: body.comments || null,
+        items: body.items.map(item => ({
+          deviceId: item.deviceId,
+          quantity: Number(item.quantity),
+          price: Number(item.price || 0), // Asegurarnos que no sea null/undefined
+          originalPrice: Number(item.originalPrice || item.price || 0)
+        }))
+      };
+    } 
+    // Estructura antigua con customer anidado
+    else if (body.customer && body.items) {
+      const { customer, items } = body;
+      
+      reservationData = {
+        customerName: customer.name,
+        customerEmail: customer.email,
+        customerPhone: customer.phone,
+        comments: body.comments || customer.comments || null,
+        items: items.map(item => ({
+          deviceId: item.id || item.deviceId,
+          quantity: Number(item.quantity),
+          price: parseFloat(item.price || 0) || 0,
+          originalPrice: parseFloat(item.originalPrice || item.price || 0) || 0
+        }))
+      };
+    }
+    // Estructura no reconocida
+    else {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Estructura de datos no reconocida",
+          receivedStructure: Object.keys(body)
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+    
+    // Identificar si hay items con ofertas (precios diferentes al original)
+    const hasOffersItems = reservationData.items.some(
+      item => item.price !== item.originalPrice
+    );
 
     // Validar datos con Zod
     const validationResult = await reservationSchema.safeParse(reservationData);
@@ -122,6 +163,7 @@ export async function POST({ request }) {
           success: false,
           message: "Datos de reserva inválidos",
           errors: validationResult.error.format(),
+          dataReceived: reservationData // Incluir los datos recibidos para depuración
         }),
         {
           status: 400,
@@ -135,13 +177,13 @@ export async function POST({ request }) {
 
     try {
       // Verificar stock disponible
-      for (const item of items) {
+      for (const item of reservationData.items) {
         const device = await prisma.device.findUnique({
-          where: { id: item.id },
+          where: { id: item.deviceId },
         })
 
         if (!device) {
-          throw new Error(`Dispositivo no encontrado: ${item.id}`)
+          throw new Error(`Dispositivo no encontrado: ${item.deviceId}`)
         }
 
         if (device.stock < item.quantity) {
@@ -151,71 +193,135 @@ export async function POST({ request }) {
         }
       }
 
-      // Crear la reserva y actualizar stock en una transacción
-      const reservation = await prisma.$transaction(async (tx) => {
-        // Crear la reserva
-        const newReservation = await tx.reservation.create({
-          data: {
-            code: reservationCode,
-            customerName: customer.name,
-            customerEmail: customer.email,
-            customerPhone: customer.phone,
-            comments: customer.comments || "",
-            total,
-            items: {
-              create: items.map((item) => ({
-                quantity: item.quantity,
-                price: item.price,
-                originalPrice: item.originalPrice || item.price, // Guardar el precio original
-                deviceId: item.id,
-              })),
-            },
-          },
-          include: {
-            items: {
-              include: {
-                device: true,
+      // Separar items de precio de lista y con oferta
+      const listPriceItems = reservationData.items.filter(item => item.price === item.originalPrice);
+      const offerItems = reservationData.items.filter(item => item.price !== item.originalPrice);
+      
+      // Primero, procesamos las posibles ofertas si existen
+      if (offerItems.length > 0) {
+        // Crear ofertas en la base de datos
+        for (const item of offerItems) {
+          await prisma.offer.create({
+            data: {
+              customerName: reservationData.customerName,
+              customerEmail: reservationData.customerEmail,
+              customerPhone: reservationData.customerPhone,
+              comments: reservationData.comments || "",
+              offerPrice: item.price,
+              originalPrice: item.originalPrice,
+              quantity: item.quantity,
+              device: {
+                connect: { id: item.deviceId } // Conectar con el dispositivo existente
+              }
+            }
+          });
+        }
+      }
+      
+      // Si hay items de precio de lista, crear la reserva directamente
+      let reservation = null;
+      if (listPriceItems.length > 0) {
+        // Calcular el total con valores numéricos seguros
+        const listPriceTotal = listPriceItems.reduce((sum, item) => {
+          const price = parseFloat(item.price || 0) || 0;
+          const quantity = parseInt(item.quantity || 1) || 1;
+          return sum + (price * quantity);
+        }, 0);
+        
+        // Crear la reserva y actualizar stock en una transacción
+        reservation = await prisma.$transaction(async (tx) => {
+          // Crear la reserva
+          const newReservation = await tx.reservation.create({
+            data: {
+              code: reservationCode,
+              customerName: reservationData.customerName,
+              customerEmail: reservationData.customerEmail,
+              customerPhone: reservationData.customerPhone,
+              comments: reservationData.comments || "",
+              total: listPriceTotal,
+              items: {
+                create: listPriceItems.map((item) => ({
+                  quantity: item.quantity,
+                  price: item.price,
+                  originalPrice: item.price, // Para items de precio de lista son iguales
+                  deviceId: item.deviceId,
+                })),
               },
             },
-          },
-        })
-
-        // Actualizar stock
-        for (const item of items) {
-          await tx.device.update({
-            where: { id: item.id },
-            data: {
-              stock: {
-                decrement: item.quantity,
+            include: {
+              items: {
+                include: {
+                  device: true,
+                },
               },
             },
           })
-        }
 
-        return newReservation
-      })
+          // Actualizar stock solo para los items de precio de lista
+          for (const item of listPriceItems) {
+            await tx.device.update({
+              where: { id: item.deviceId },
+              data: {
+                stock: {
+                  decrement: item.quantity,
+                },
+              },
+            })
+          }
 
-      // Enviar correo de confirmación
-      try {
-        await sendReservationEmail({
-          customer,
-          items: items.map((item) => ({
-            ...item,
-            total: item.price * item.quantity,
-          })),
-          total,
-          reservationCode,
+          return newReservation
         })
-      } catch (emailError) {
-        console.error("Error al enviar el correo:", emailError)
-        // Continuamos aunque falle el envío del correo
       }
+
+      // Enviar correo de confirmación cuando se crea una reserva directa
+      if (reservation) {
+        try {
+          // Obtener los detalles completos de los dispositivos para el correo
+          const deviceDetails = await Promise.all(listPriceItems.map(async (item) => {
+            const device = await prisma.device.findUnique({
+              where: { id: item.deviceId },
+              select: { name: true }
+            });
+            return {
+              name: device?.name || 'Producto',
+              price: item.price,
+              quantity: item.quantity,
+              total: item.price * item.quantity,
+            };
+          }));
+
+          await sendReservationEmail({
+            customer: {
+              name: reservationData.customerName,
+              email: reservationData.customerEmail,
+              phone: reservationData.customerPhone,
+              comments: reservationData.comments
+            },
+            items: deviceDetails,
+            total: listPriceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            reservationCode,
+          });
+          console.log(`Correo de reserva enviado exitosamente para el código: ${reservationCode}`);
+        } catch (emailError) {
+          console.error("Error al enviar el correo de reserva:", emailError);
+          // Continuamos aunque falle el envío del correo
+        }
+      }
+      
+      // Preparar respuesta con información de ofertas si existen
+      const hasOffers = offerItems.length > 0;
 
       return new Response(
         JSON.stringify({
           success: true,
-          reservationCode,
-          message: "Reserva creada exitosamente",
+          reservationCode: listPriceItems.length > 0 ? reservationCode : null,
+          hasOffers,
+          offerCount: offerItems.length,
+          message: hasOffers 
+            ? (listPriceItems.length > 0 
+              ? "Reserva creada exitosamente y ofertas enviadas para revisión" 
+              : "Ofertas enviadas para revisión del administrador")
+            : "Reserva creada exitosamente",
         }),
         {
           status: 200,
@@ -226,12 +332,11 @@ export async function POST({ request }) {
       throw new Error(`Error procesando la reserva: ${error.message}`)
     }
   } catch (error) {
-    console.error("Error completo:", error)
+    // Error ya manejado en la respuesta
     return new Response(
       JSON.stringify({
         success: false,
         message: error.message || "Error al procesar la reserva",
-        error: process.env.NODE_ENV === "development" ? error.toString() : undefined,
       }),
       {
         status: 500,

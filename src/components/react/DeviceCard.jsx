@@ -117,9 +117,24 @@ export const DeviceCard = ({ device }) => {
               Stock: {device.stock}
             </Badge>
           </div>
+          
+          {/* Información de ofertas pendientes */}
+          {device.pendingOffersCount > 0 && (
+            <div className="mt-2 bg-green-50 p-2 rounded-md border border-green-100">
+              <span className="text-xs font-medium text-green-700 flex items-center gap-1">
+                <Tag className="h-3 w-3" /> 
+                {device.pendingOffersCount} {device.pendingOffersCount === 1 ? "oferta" : "ofertas"}
+                <span className="ml-1">
+                  (Mayor: ${typeof device.highestOfferAmount === 'number' ? device.highestOfferAmount.toLocaleString() : '0'})
+                </span>
+              </span>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between items-center pt-2">
-          <span className="text-xl font-bold">${device.price.toLocaleString()}</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold">${device.price.toLocaleString()}</span>
+          </div>
 
           {isOutOfStock ? (
             <TooltipProvider>
@@ -202,7 +217,6 @@ export const DeviceCard = ({ device }) => {
                 <span className="font-semibold">${device.price.toLocaleString()}</span>
               </div>
             </div>
-
             <div>
               <div>
                 <Label htmlFor="offerPrice">Tu oferta</Label>

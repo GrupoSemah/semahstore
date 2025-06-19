@@ -1,12 +1,12 @@
 {
   "devices": [
     {
-      "name": "Planta Decorativa",
-      "description": "Planta artificial decorativa ",
-      "price": 10,
-      "brand": "Semah",
-      "type": "Hogar",
-      "image": "/assets/Semah-Articulos/Adornos_home_wylhoo.webp",
+      "name": "Samsung Galaxy A12",
+      "description": "Pantalla sin rayones, color Azul, cable cargador, muy buen estado",
+      "price": 65.0,
+      "brand": "Samsung",
+      "type": "Celulares",
+      "image": "/assets/Semah-Articulos/vivianaamd1.webp",
       "stock": 1
     }
   ]

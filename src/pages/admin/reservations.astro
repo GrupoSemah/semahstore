@@ -3,11 +3,15 @@ import Layout from '../../layouts/Layout.astro';
 import { ReservationView } from '../../components/react/ReservationView';
 import { AmountCards } from '../../components/react/AmountCards';
 import { Toaster } from '../../components/ui/sonner';
+import AdminNavbar from '../../components/AdminNavbar.astro';
+import { AuthModal } from '../../components/react/AuthModal';
 ---
 
 <Layout title="Administración de Reservas - SEMAH Store">
   <main class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">Administración de Reservas</h1>
+    <h1 class="text-2xl font-bold mb-2">Administración de Reservas</h1>
+    
+    <AdminNavbar />
     
     <AmountCards client:load />
     
@@ -18,5 +22,6 @@ import { Toaster } from '../../components/ui/sonner';
     
     <ReservationView client:load />
     <Toaster client:load />
+    <AuthModal client:load />
   </main>
 </Layout> 

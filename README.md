@@ -4,7 +4,7 @@
 
 ## 🚀 Descripción
 
-SEMAH Store es una plataforma de comercio electrónico moderna y robusta desarrollada con tecnologías de vanguardia. Diseñada específicamente para la gestión y venta de equipos profesionales, ofrece una experiencia de usuario fluida y responsive.
+SEMAH Store es una plataforma de comercio electrónico moderna y robusta desarrollada con tecnologías de vanguardia. Diseñada específicamente para la gestión y venta de Artículos, ofrece una experiencia de usuario fluida y responsive con sistemas avanzados de reservas, ofertas y administración.
 
 ## ✨ Características Principales
 
@@ -13,11 +13,15 @@ SEMAH Store es una plataforma de comercio electrónico moderna y robusta desarro
 - 🌓 **Modo Oscuro**: Soporte completo para tema claro/oscuro
 - 📱 **Diseño Responsive**: Experiencia optimizada en todos los dispositivos
 - 🔍 **Búsqueda en Tiempo Real**: Búsqueda instantánea de productos
-- 📧 **Notificaciones por Email**: Sistema automatizado de confirmación de reservas
+- 📧 **Notificaciones por Email**: Sistema automatizado para reservas y ofertas
 - 💾 **Persistencia de Datos**: Base de datos PostgreSQL con Prisma ORM
 - 📋 **Gestión de Reservas**: Sistema completo con estados (pendiente, completado, cancelado)
+- 💰 **Sistema de Ofertas**: Permite a clientes realizar ofertas por productos
+- ⚙️ **Panel Administrativo**: Dashboard con gestión de reservas y ofertas
 - 📊 **Exportación a Excel**: Exportación de datos de reservas para análisis
 - 🔄 **Control de Inventario**: Actualización automática al completar o cancelar reservas
+- 🔍 **Vista Consolidada**: Agrupación de ofertas por producto con identificación de mejor oferta
+- 🗑️ **Optimización de DB**: Limpieza automática de ofertas redundantes
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -89,11 +93,22 @@ semahstore/
 │   ├── components/    # Componentes reutilizables
 │   │   ├── export/    # Componentes para exportación de datos
 │   │   ├── react/     # Componentes específicos de React
+│   │   │   ├── OfferManagement.jsx    # Gestión de ofertas
+│   │   │   ├── OfferDetailsModal.jsx  # Modal de detalles de ofertas
+│   │   │   └── DashboardSummary.jsx   # Resumen del dashboard admin
 │   │   └── ui/        # Componentes de interfaz de usuario
 │   ├── layouts/       # Plantillas y estructuras de página
 │   ├── lib/           # Funciones y utilidades
 │   ├── pages/         # Páginas de la aplicación
-│   │   └── api/       # Endpoints de la API
+│   │   ├── admin/     # Páginas de administración
+│   │   │   ├── index.astro   # Dashboard principal
+│   │   │   ├── offers.astro  # Gestión de ofertas
+│   │   │   └── reservations.astro # Gestión de reservas
+│   │   ├── api/       # Endpoints de la API
+│   │   │   ├── offers/    # API de ofertas
+│   │   │   │   └── notifications.js # Notificaciones de ofertas
+│   │   │   ├── offers.js  # CRUD de ofertas
+│   │   │   └── reservations.js # CRUD de reservas
 │   ├── store/         # Gestión de estado global
 │   └── styles/        # Estilos globales y temas
 └── scripts/          # Scripts de automatización
@@ -106,6 +121,32 @@ semahstore/
 - `npm run preview` - Previsualiza la build de producción
 - `npm run import-devices` - Importa datos de dispositivos
 - `npm run astro` - Ejecuta comandos de Astro CLI
+
+## 💰 Sistema de Ofertas y Reservas
+
+SEMAH Store implementa un sistema avanzado de ofertas y reservas con las siguientes características:
+
+### Proceso de Ofertas
+
+1. **Realización de Ofertas**: Los clientes pueden hacer ofertas por productos a un precio que ellos proponen
+2. **Panel Administrativo**: Las ofertas se muestran en el panel administrativo agrupadas por producto
+3. **Mejor Oferta**: El sistema identifica automáticamente la mejor oferta para cada producto
+4. **Aceptación/Rechazo**: Los administradores pueden aceptar o rechazar ofertas individualmente
+5. **Conversión a Reserva**: Al aceptar una oferta, se genera automáticamente una reserva
+
+### Optimización de Base de Datos
+
+Cuando se acepta una oferta para un producto, el sistema:
+
+1. Marca automáticamente las demás ofertas pendientes para ese producto como "canceladas"
+2. Agrega un mensaje indicando que otra oferta fue aceptada
+3. Optimiza el uso del espacio en la base de datos sin perder el historial de ofertas
+
+### Interfaz de Usuario
+
+- Vista agrupada de ofertas por producto para facilitar la gestión
+- Modal de detalles que se adapta perfectamente en dispositivos móviles y escritorio
+- Notificaciones para mantener informados a clientes y administradores
 
 ## 💻 Requisitos del Sistema
 

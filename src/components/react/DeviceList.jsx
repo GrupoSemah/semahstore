@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 export const DeviceList = ({ devices }) => {
+
   const { filters } = useStore()
   const [filteredDevices, setFilteredDevices] = useState(devices)
   const [showOutOfStock, setShowOutOfStock] = useState(true)
@@ -15,8 +16,10 @@ export const DeviceList = ({ devices }) => {
   const itemsPerPage = 10
 
   useEffect(() => {
-    // Resetear a la primera página cuando cambian los filtros
-    setCurrentPage(1)
+    // Resetear a la primera página cuando cambian los filtros o al activar/desactivar showAll
+    if (!showAll) {
+      setCurrentPage(1)
+    }
     
     let result = [...devices]
 
@@ -79,7 +82,7 @@ export const DeviceList = ({ devices }) => {
 
     // Resultado final aplicando todos los filtros
     setFilteredDevices(result)
-  }, [devices, filters, showOutOfStock])
+  }, [devices, filters, showOutOfStock, showAll])
 
   if (filteredDevices.length === 0) {
     return (
@@ -181,7 +184,10 @@ export const DeviceList = ({ devices }) => {
       {/* Información de paginación */}
       {filteredDevices.length > 0 && (
         <div className="text-center text-sm text-muted-foreground">
-          Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredDevices.length)} de {filteredDevices.length} productos
+          {showAll 
+            ? `Mostrando todos los ${filteredDevices.length} productos en una página`
+            : `Mostrando ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredDevices.length)} de ${filteredDevices.length} productos`
+          }
         </div>
       )}
     </div>
