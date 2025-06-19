@@ -217,7 +217,31 @@ export const DeviceCard = ({ device }) => {
                 <span className="font-semibold">${device.price.toLocaleString()}</span>
               </div>
             </div>
-
+            <div>
+              <div>
+                <Label htmlFor="offerPrice">Tu oferta</Label>
+                <div className="flex gap-2 items-center mt-1">
+                  <Input
+                    id="offerPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={offerPrice}
+                    onChange={handleOfferPriceChange}
+                    className={offerError ? "border-red-500" : ""}
+                  />
+                  <span className="text-sm font-medium">$</span>
+                </div>
+                {offerError && (
+                  <p className="text-red-500 text-sm mt-1">{offerError}</p>
+                )}
+                <p className="text-sm text-muted-foreground mt-1">
+                  Puedes ofertar un precio diferente. El precio debe ser al
+                  menos el 50% del precio original.
+                </p>
+              </div>
+            </div>
+            
             <div className="flex justify-between gap-2 mt-2">
               <Button 
                 variant="outline" 
