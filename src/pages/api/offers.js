@@ -10,6 +10,12 @@ const prisma = new PrismaClient()
 export async function GET() {
   try {
     const offers = await prisma.offer.findMany({
+      where: {
+        // Solo mostrar ofertas pendientes o canceladas (rechazadas), no mostrar las aceptadas
+        status: {
+          in: ["pending", "rejected", "cancelled"]
+        }
+      },
       include: {
         device: true
       },

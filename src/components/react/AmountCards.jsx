@@ -93,7 +93,7 @@ export const AmountCards = () => {
       color: "bg-blue-50 text-blue-600",
     },
     {
-      title: "Monto Ofertado",
+      title: "Monto Reservado",
       value: formatCurrency(amounts.offered),
       icon: <DollarSign className="h-8 w-8 text-amber-600" />,
       description: "Total de ofertas recibidas",
