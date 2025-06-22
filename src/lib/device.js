@@ -28,11 +28,17 @@ const prisma = new PrismaClient();
  */
 export async function getDevices() {
   try {
+    // Obtener todos los dispositivos con sus ofertas pendientes y reservas pendientes
     const devices = await prisma.device.findMany({
       include: {
         offers: {
           where: {
             status: "pending"
+          }
+        },
+        reservationItems: {
+          include: {
+            reservation: true
           }
         }
       },
@@ -41,10 +47,22 @@ export async function getDevices() {
       },
     });
 
-    // Agregar el contador de ofertas pendientes y la oferta más alta a cada dispositivo
+    // Procesar dispositivos con información de ofertas y reservas pendientes
     const processedDevices = devices.map(device => {
       // Aseguramos que offers sea un array
       const offers = Array.isArray(device.offers) ? device.offers : [];
+      
+      // Calcular unidades reservadas pero aún no completadas
+      const reservedItems = Array.isArray(device.reservationItems) ? device.reservationItems : [];
+      const pendingReservations = reservedItems.filter(item => 
+        item.reservation && (item.reservation.status === "pending" || item.reservation.status === "confirmed")
+      );
+      
+      // Calcular cantidad total reservada
+      const reservedQuantity = pendingReservations.reduce((total, item) => total + item.quantity, 0);
+      
+      // Stock real disponible = stock actual - unidades reservadas
+      const availableStock = Math.max(0, device.stock - reservedQuantity);
       
       // Encontrar la oferta con el monto más alto (usando offerPrice)
       let highestOffer = 0;
@@ -64,11 +82,15 @@ export async function getDevices() {
         ...device,
         pendingOffersCount: offers.length || 0,
         highestOfferAmount: highestOffer,
-        offers: undefined // Eliminamos el array de ofertas completo para no enviarlo al cliente
+        actualStock: device.stock, // Stock en base de datos
+        reservedQuantity,         // Cantidad reservada
+        stock: availableStock,    // Stock disponible real (mostrado al usuario)
+        offers: undefined,        // Eliminamos el array de ofertas completo
+        reservationItems: undefined // Eliminamos el array de reservas
       };
     });
     
-    // Retornamos los dispositivos con su contador de ofertas pendientes
+    // Retornamos los dispositivos con su contador de ofertas pendientes y stock ajustado
     return processedDevices;
   } catch (error) {
     console.error("Error fetching devices:", error);

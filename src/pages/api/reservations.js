@@ -445,6 +445,28 @@ export async function PATCH({ request }) {
         });
       }
     }
+    
+    // Si estamos completando la reserva, verificar que el stock esté correctamente actualizado
+    // y que no aparezca como disponible cuando ya está completado
+    if (status === "completed") {
+      // Verificar cada dispositivo para asegurar que su stock refleje que ya no está disponible
+      for (const item of currentReservation.items) {
+        const device = await prisma.device.findUnique({
+          where: { id: item.deviceId }
+        });
+        
+        // Si el dispositivo muestra stock pero debería estar completado
+        // y es el único en la reserva, asegurar que no aparezca como disponible
+        if (device && device.stock > 0 && device.stock === item.quantity) {
+          await prisma.device.update({
+            where: { id: item.deviceId },
+            data: {
+              stock: 0
+            }
+          });
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({
