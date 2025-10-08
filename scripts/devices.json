@@ -1,12 +1,264 @@
 {
   "devices": [
     {
-      "name": "Samsung Galaxy A12",
-      "description": "Pantalla sin rayones, color Azul, cable cargador, muy buen estado",
-      "price": 65.0,
-      "brand": "Samsung",
-      "type": "Celulares",
-      "image": "/assets/Semah-Articulos/vivianaamd1.webp",
+      "name": "Alfombra",
+      "description": "Medidas 120 cm x 120 cm aproximadamente",
+      "price": 20.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Alfombra.webp",
+      "stock": 1
+    },
+    {
+      "name": "Base de Comedor",
+      "description": "Base de comedor con vidrio cuadrado",
+      "price": 20.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Basedecomedor.webp",
+      "stock": 1
+    },
+    {
+      "name": "Cama full",
+      "description": "Cama de madera tamaño full",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Camafull.webp",
+      "stock": 1
+    },
+    {
+      "name": "Camarote",
+      "description": "Camarote de madera tamaño Twin",
+      "price": 80.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Camarote.webp",
+      "stock": 1
+    },
+    {
+      "name": "Consola",
+      "description": "Consola de madera",
+      "price": 40.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Consola.webp",
+      "stock": 1
+    },
+    {
+      "name": "Cuna",
+      "description": "Cuna de madera, incluye colchón, cambiador y juego de cubre cama",
+      "price": 300.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Cuna.webp",
+      "stock": 1
+    },
+    {
+      "name": "Dragon",
+      "description": "Dragón de juguete",
+      "price": 10.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Dragon.webp",
+      "stock": 1
+    },
+    {
+      "name": "Espejo redondo",
+      "description": "Espejo redondo",
+      "price": 40.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Espejoredondo.webp",
+      "stock": 1
+    },
+    {
+      "name": "Espejo",
+      "description": "Espejo rectangular",
+      "price": 40.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Espejo.webp",
+      "stock": 1
+    },
+    {
+      "name": "Gavetero",
+      "description": "Gavetero de hierro",
+      "price": 30.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Gavetero.webp",
+      "stock": 1
+    },
+    {
+      "name": "Lampara",
+      "description": "Lampara, base de madera",
+      "price": 20.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Lampara.webp",
+      "stock": 1
+    },
+    {
+      "name": "Mecedora",
+      "description": "Mecedora con reposapiés",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Mecedora.webp",
+      "stock": 1
+    },
+    {
+      "name": "Mesa Auxiliar",
+      "description": "Mesa Auxiliar",
+      "price": 30.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/MesaAuxiliar.webp",
+      "stock": 1
+    },
+    {
+      "name": "Mesa Auxiliar de Madera",
+      "description": "Mesa Auxiliar de Madera",
+      "price": 30.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/MesaAuxiliardeMadera.webp",
+      "stock": 1
+    },
+    {
+      "name": "Mesa de Centro",
+      "description": "Mesa de Centro, de acero inoxidable y vidrio",
+      "price": 60.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/MesadeCentro.webp",
+      "stock": 1
+    },
+    {
+      "name": "Oso",
+      "description": "Oso de peluche grande",
+      "price": 10.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Oso.webp",
+      "stock": 1
+    },
+    {
+      "name": "Ottoman",
+      "description": "Asiento bajo y acolchado de jeans",
+      "price": 20.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Ottoman.webp",
+      "stock": 1
+    },
+    {
+      "name": "Poltrona Beige",
+      "description": "Poltrona Beige",
+      "price": 80.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Poltronabeige.webp",
+      "stock": 1
+    },
+    {
+      "name": "Poltrona de Madera",
+      "description": "Poltrona de Madera",
+      "price": 80.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Poltronademadera.webp",
+      "stock": 1
+    },
+    {
+      "name": "Poltrona",
+      "description": "Poltrona",
+      "price": 80.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Poltrona.webp",
+      "stock": 1
+    },
+    {
+      "name": "Porta Retrato",
+      "description": "Porta Retrato, pequeño",
+      "price": 5.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Portaretrato.webp",
+      "stock": 1
+    },
+    {
+      "name": "Juego de terraza",
+      "description": "Incluye 2 sillas",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Juegodeterraza.webp",
+      "stock": 1
+    },
+    {
+      "name": "Sillas Beige",
+      "description": "6 Sillas",
+      "price": 30.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Sillasbeige.webp",
+      "stock": 6
+    },
+    {
+      "name": "Sillas de barra",
+      "description": "3 Sillas",
+      "price": 90.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Sillasdebarra.webp",
+      "stock": 3
+    },
+    {
+      "name": "Sofá Beige",
+      "description": "Sofá Beige",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Sofabeige.webp",
+      "stock": 1
+    },
+    {
+      "name": "Sofá Turquesa",
+      "description": "Sofá Turquesa",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Sofaturquesa.webp",
+      "stock": 1
+    },
+    {
+      "name": "Sofá Chocolate",
+      "description": "Sofá Chocolate",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/Sofachocolate.webp",
+      "stock": 1
+    },
+    {
+      "name": "Escritorio",
+      "description": "Escritorio",
+      "price": 80.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/escritorio.webp",
+      "stock": 2
+    },
+    {
+      "name": "Nevera",
+      "description": "Medidas 150 cm de alto aproximadamente",
+      "price": 100.0,
+      "brand": "Semah",
+      "type": "Hogar",
+      "image": "/assets/Deposito-3D06/nevera.webp",
       "stock": 1
     }
   ]
