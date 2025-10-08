@@ -156,14 +156,18 @@ export async function getFilterOptions() {
       },
     });
 
-    // Extraer los valores de los objetos y filtrar valores vacíos
-    const typeValues = types
-      .map(t => t.type)
-      .filter(type => Boolean(type && type.trim() !== ''));
+    // Extraer los valores de los objetos, normalizar y eliminar duplicados
+    const typeValues = [...new Set(
+      types
+        .map(t => t.type?.trim()) // Eliminar espacios
+        .filter(type => Boolean(type && type !== ''))
+    )];
 
-    const brandValues = brands
-      .map(b => b.brand)
-      .filter(brand => Boolean(brand && brand.trim() !== ''));
+    const brandValues = [...new Set(
+      brands
+        .map(b => b.brand?.trim()) // Eliminar espacios
+        .filter(brand => Boolean(brand && brand !== ''))
+    )];
 
     console.log('Tipos encontrados:', typeValues);
     console.log('Marcas encontradas:', brandValues);
