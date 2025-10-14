@@ -4,8 +4,7 @@ import { persist } from "zustand/middleware"
 const createCartStore = (set, get) => ({
   cart: [],
 
-  addToCart: (item, offerPrice = null) => {
-
+  addToCart: (item) => {
     if (item.stock <= 0) {
       console.error("Cannot add item with no stock")
       return
@@ -15,13 +14,6 @@ const createCartStore = (set, get) => ({
     const existingItem = cart.find((cartItem) => cartItem.id === item.id)
 
     if (existingItem) {
-
-      if (offerPrice !== null && existingItem.offerPrice !== offerPrice) {
-        set({ 
-          cart: [...cart, { ...item, quantity: 1, offerPrice }] 
-        })
-        return
-      }
       if (existingItem.quantity + 1 > item.stock) {
         console.error("Cannot add more items than available in stock")
         return
@@ -32,7 +24,9 @@ const createCartStore = (set, get) => ({
       )
       set({ cart: updatedCart })
     } else {
-      set({ cart: [...cart, { ...item, quantity: 1, offerPrice }] })
+      // Aplicar descuento del 50% automáticamente
+      const discountedPrice = item.price * 0.5
+      set({ cart: [...cart, { ...item, price: discountedPrice, originalPrice: item.price, quantity: 1 }] })
     }
   },
 
@@ -45,15 +39,26 @@ const createCartStore = (set, get) => ({
 
   updateQuantity: (id, quantity) => {
     const { cart } = get()
-    const item = cart.find((item) => item.id === id)
+    const item = cart.find((cartItem) => cartItem.id === id)
 
-    if (item && quantity > item.stock) {
+    if (!item) {
+      console.error("Item not found in cart")
+      return
+    }
+
+    // Validar que la cantidad no exceda el stock disponible
+    if (quantity > item.stock) {
       console.error("Cannot add more items than available in stock")
       return
     }
 
+    // Asegurar que la cantidad sea al menos 1
+    const validQuantity = Math.max(1, quantity)
+
     set({
-      cart: cart.map((item) => (item.id === id ? { ...item, quantity } : item)),
+      cart: cart.map((cartItem) => 
+        cartItem.id === id ? { ...cartItem, quantity: validQuantity } : cartItem
+      ),
     })
   },
 

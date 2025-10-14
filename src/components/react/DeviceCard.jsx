@@ -2,72 +2,28 @@ import { useCart } from "@/store/cartStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, AlertCircle, Info, DollarSign, Tag } from "lucide-react"
+import { ShoppingCart, AlertCircle, Info, Tag, Percent } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { toast } from "sonner"
 import { useSheetStore } from "@/store/sheetStore"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 export const DeviceCard = ({ device }) => {
   const { addToCart } = useCart()
   const { setOpen } = useSheetStore()
   const [descriptionDialogOpen, setDescriptionDialogOpen] = useState(false)
-  const [offerDialogOpen, setOfferDialogOpen] = useState(false)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
-  const [offerPrice, setOfferPrice] = useState(device.price)
-  const [offerError, setOfferError] = useState('')
   const isOutOfStock = device.stock <= 0
+  
+  // Calcular precio con descuento del 50%
+  const discountedPrice = device.price * 0.5
 
-  const handleOpenOfferDialog = () => {
-    setOfferPrice(device.price)
-    setOfferError('')
-    setOfferDialogOpen(true)
-  }
-
-  const handleAddToCartWithOriginalPrice = () => {
+  const handleAddToCart = () => {
     addToCart(device)
     setOpen(true)
-    setOfferDialogOpen(false)
     toast.success("Producto agregado al carrito", {
-      description: `${device.name} se ha agregado a tu carrito con el precio original`
-    })
-  }
-
-  const validateOfferPrice = (price) => {
-    const minPrice = device.price * 0.5 // 50% del precio original
-    
-    if (price <= 0) {
-      return 'El precio debe ser mayor que cero'
-    }
-    
-    if (price < minPrice) {
-      return `El precio mínimo debe ser al menos el 50% del precio original (${minPrice.toLocaleString()} $)`
-    }
-    
-    return ''
-  }
-
-  const handleOfferPriceChange = (e) => {
-    const price = parseFloat(e.target.value)
-    setOfferPrice(price)
-    setOfferError(validateOfferPrice(price))
-  }
-
-  const handleAddToCartWithOffer = () => {
-    const error = validateOfferPrice(offerPrice)
-    if (error) {
-      setOfferError(error)
-      return
-    }
-    
-    addToCart(device, offerPrice)
-    setOpen(true)
-    setOfferDialogOpen(false)
-    toast.success("Producto con oferta agregado al carrito", {
-      description: `${device.name} se ha agregado a tu carrito con una oferta de ${offerPrice.toLocaleString()} $`
+      description: `${device.name} se ha agregado con 50% de descuento`
     })
   }
   
@@ -112,28 +68,20 @@ export const DeviceCard = ({ device }) => {
               <Info className="h-3 w-3 flex-shrink-0 text-muted-foreground/70" />
             )}
           </div>
-          <div className="mt-2 flex items-center">
+          <div className="mt-2 flex items-center gap-2">
             <Badge variant={isOutOfStock ? "destructive" : "secondary"} className="text-xs">
               Stock: {device.stock}
             </Badge>
+            <Badge variant="default" className="text-xs bg-[#FF6B1E] hover:bg-[#FF8C4E]">
+              <Percent className="h-3 w-3 mr-1" />
+              50% OFF
+            </Badge>
           </div>
-          
-          {/* Información de ofertas pendientes */}
-          {device.pendingOffersCount > 0 && (
-            <div className="mt-2 bg-green-50 p-2 rounded-md border border-green-100">
-              <span className="text-xs font-medium text-green-700 flex items-center gap-1">
-                <Tag className="h-3 w-3" /> 
-                {device.pendingOffersCount} {device.pendingOffersCount === 1 ? "oferta" : "ofertas"}
-                <span className="ml-1">
-                  (Mayor: ${typeof device.highestOfferAmount === 'number' ? device.highestOfferAmount.toLocaleString() : '0'})
-                </span>
-              </span>
-            </div>
-          )}
         </CardContent>
         <CardFooter className="flex justify-between items-center pt-2">
           <div className="flex flex-col">
-            <span className="text-xl font-bold">${device.price.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground line-through">${device.price.toLocaleString()}</span>
+            <span className="text-xl font-bold text-[#FF6B1E]">${discountedPrice.toLocaleString()}</span>
           </div>
 
           {isOutOfStock ? (
@@ -151,7 +99,7 @@ export const DeviceCard = ({ device }) => {
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <Button onClick={handleOpenOfferDialog} size="sm">
+            <Button onClick={handleAddToCart} size="sm" className="bg-[#FF6B1E] hover:bg-[#FF8C4E]">
               <ShoppingCart className="h-4 w-4 mr-2" />
               Agregar
             </Button>
@@ -177,9 +125,13 @@ export const DeviceCard = ({ device }) => {
               <span className="font-medium">Tipo:</span>
               <span>{device.type}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="font-medium">Precio:</span>
-              <span>${device.price.toLocaleString()}</span>
+              <div className="flex flex-col items-end">
+                <span className="text-sm text-muted-foreground line-through">${device.price.toLocaleString()}</span>
+                <span className="text-lg font-bold text-[#FF6B1E]">${discountedPrice.toLocaleString()}</span>
+                <Badge variant="default" className="text-xs bg-[#FF6B1E] mt-1">50% OFF</Badge>
+              </div>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Stock disponible:</span>
@@ -188,77 +140,12 @@ export const DeviceCard = ({ device }) => {
           </div>
           {!isOutOfStock && (
             <div className="flex justify-end mt-4">
-              <Button onClick={handleOpenOfferDialog}>
+              <Button onClick={handleAddToCart} className="bg-[#FF6B1E] hover:bg-[#FF8C4E]">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Agregar al carrito
               </Button>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Agregar al carrito</DialogTitle>
-            <DialogDescription>
-              Elige entre agregar el producto con su precio actual o hacer una oferta
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium flex items-center"><Tag className="h-4 w-4 mr-2" />Producto</h3>
-                <span>{device.name}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium flex items-center"><DollarSign className="h-4 w-4 mr-2" />Precio actual</h3>
-                <span className="font-semibold">${device.price.toLocaleString()}</span>
-              </div>
-            </div>
-            <div>
-              <div>
-                <Label htmlFor="offerPrice">Tu oferta</Label>
-                <div className="flex gap-2 items-center mt-1">
-                  <Input
-                    id="offerPrice"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={offerPrice}
-                    onChange={handleOfferPriceChange}
-                    className={offerError ? "border-red-500" : ""}
-                  />
-                  <span className="text-sm font-medium">$</span>
-                </div>
-                {offerError && (
-                  <p className="text-red-500 text-sm mt-1">{offerError}</p>
-                )}
-                <p className="text-sm text-muted-foreground mt-1">
-                  Puedes ofertar un precio diferente. El precio debe ser al
-                  menos el 50% del precio original.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex justify-between gap-2 mt-2">
-              <Button 
-                variant="outline" 
-                onClick={handleAddToCartWithOriginalPrice}
-                className="flex-1"
-              >
-                Precio actual (${device.price.toLocaleString()})
-              </Button>
-              <Button 
-                onClick={handleAddToCartWithOffer} 
-                disabled={!!offerError || !offerPrice}
-                className="flex-1"
-              >
-                Ofertar (${offerPrice?.toLocaleString() || 0})
-              </Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
 
@@ -279,21 +166,25 @@ export const DeviceCard = ({ device }) => {
             />
           </div>
           <DialogFooter className="flex justify-between items-center">
-            <div>
-              <span className="font-medium">${device.price.toLocaleString()}</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground line-through">${device.price.toLocaleString()}</span>
+                <Badge variant="default" className="text-xs bg-[#FF6B1E]">50% OFF</Badge>
+              </div>
+              <span className="text-lg font-bold text-[#FF6B1E]">${discountedPrice.toLocaleString()}</span>
               {device.stock <= 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <Badge variant="destructive" className="mt-1">
                   Sin Stock
                 </Badge>
               )}
               {device.stock > 0 && (
-                <Badge variant="outline" className="ml-2">
+                <Badge variant="outline" className="mt-1">
                   Stock: {device.stock}
                 </Badge>
               )}
             </div>
             {device.stock > 0 && (
-              <Button onClick={handleOpenOfferDialog} size="sm">
+              <Button onClick={handleAddToCart} size="sm" className="bg-[#FF6B1E] hover:bg-[#FF8C4E]">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Agregar al carrito
               </Button>

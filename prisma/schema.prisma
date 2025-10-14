@@ -20,6 +20,10 @@ model Device {
   updatedAt        DateTime          @updatedAt
   reservationItems ReservationItem[]
   offers           Offer[]
+
+  @@index([brand])
+  @@index([type])
+  @@index([stock])
 }
 
 model Reservation {
@@ -37,6 +41,10 @@ model Reservation {
   items              ReservationItem[]
   offerId            String?           // ID de la oferta si la reserva fue generada desde una oferta
   offer              Offer?            @relation(fields: [offerId], references: [id])
+
+  @@index([status])
+  @@index([customerEmail])
+  @@index([createdAt])
 }
 
 model ReservationItem {
@@ -66,4 +74,8 @@ model Offer {
   updatedAt     DateTime     @updatedAt
   rejectionReason String?    // Razón de rechazo si aplica
   reservations  Reservation[]
+
+  @@index([status])
+  @@index([deviceId])
+  @@index([createdAt])
 }
