@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, AlertCircle, Loader2, Shield, Tag } from "lucide-react"
+import { Check, AlertCircle, Loader2, Shield } from "lucide-react"
 import { useCart } from "@/store/cartStore"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,6 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [reservationCode, setReservationCode] = useState(null)
-  const [offersCreated, setOffersCreated] = useState(false)
   const [error, setError] = useState(null)
   const [stockValidation, setStockValidation] = useState({ valid: true, invalidItems: [] })
   const [isOpen, setIsOpen] = useState(true)
@@ -89,21 +88,13 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
     }
 
     try {
-      // Preparar los items con sus precios (originales o ofertados)
-      const itemsWithOffers = cartItems.map((item) => {
-        // Asegurarse que los precios sean números válidos
-        const originalPrice = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
-        let price = originalPrice;
-        
-        if (item.offerPrice !== null && item.offerPrice !== undefined) {
-          price = typeof item.offerPrice === 'number' ? item.offerPrice : parseFloat(item.offerPrice) || originalPrice;
-        }
-        
+      // Preparar los items con precios con descuento ya aplicado
+      const reservationItems = cartItems.map((item) => {
         return {
-          deviceId: item.id, // Asegurar que usamos deviceId para coincidir con el esquema
+          deviceId: item.id,
           quantity: parseInt(item.quantity) || 1,
-          price: price,
-          originalPrice: originalPrice,
+          price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
+          originalPrice: typeof item.originalPrice === 'number' ? item.originalPrice : parseFloat(item.originalPrice) || 0,
         };
       });
       
@@ -112,7 +103,7 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
         customerEmail: formData.email,
         customerPhone: formData.phone,
         comments: formData.comments || "",
-        items: itemsWithOffers,
+        items: reservationItems,
       }
 
       const response = await axios.post("/api/reservations", reservationData, {
@@ -128,22 +119,13 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
       }
 
       setReservationCode(response.data.reservationCode)
-      // Almacenar información sobre ofertas creadas
-      setOffersCreated(response.data.offersCreated || false)
       clearCart()
       
-      // Mostrar notificación de éxito con Sonner
-      if (response.data.offersCreated) {
-        toast.success("Oferta enviada con éxito", {
-          description: "Tu oferta ha sido enviada y está pendiente de aprobación.",
-          duration: 5000
-        });
-      } else {
-        toast.success("Reserva completada con éxito", {
-          description: `Tu código de reserva es: ${response.data.reservationCode}`,
-          duration: 5000
-        });
-      }
+      // Mostrar notificación de éxito
+      toast.success("Reserva completada con éxito", {
+        description: `Tu código de reserva es: ${response.data.reservationCode}`,
+        duration: 5000
+      });
       
       // Cerrar modal después de mostrar brevemente el mensaje de éxito
       setTimeout(() => {
@@ -250,18 +232,6 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
               Tu código de reserva es: <span className="font-mono font-bold">{reservationCode}</span>
             </p>
             
-            {offersCreated && (
-              <Alert className="mt-4 mb-2 bg-amber-50">
-                <div className="flex items-start gap-2">
-                  <Tag className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <AlertDescription className="text-left">
-                    <p className="font-medium">Tienes ofertas pendientes de aprobación</p>
-                    <p className="text-sm">Algunos productos en tu carrito fueron agregados como ofertas y están pendientes de revisión por nuestro equipo. Te notificaremos por correo cuando sean aprobadas o rechazadas.</p>
-                  </AlertDescription>
-                </div>
-              </Alert>
-            )}
-            
             <p className="text-sm text-muted-foreground mt-4 mb-6">Hemos enviado los detalles a tu correo electrónico.</p>
             <Button onClick={handleClose}>Cerrar</Button>
           </div>
@@ -295,23 +265,17 @@ export const ReservationForm = ({ onClose, cartItems, total }) => {
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        {item.offerPrice !== null ? (
-                          <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1">
-                              <Tag className="h-3 w-3 text-green-600" />
-                              <p className="text-sm font-medium text-green-600">
-                                ${item.offerPrice.toLocaleString()} <span className="text-xs">(ofertado)</span>
-                              </p>
-                            </div>
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1">
                             <p className="text-xs text-muted-foreground line-through">
-                              Precio original: ${item.price.toLocaleString()}
+                              ${item.originalPrice?.toLocaleString()}
                             </p>
+                            <span className="text-xs bg-[#FF6B1E] text-white px-1 rounded">50% OFF</span>
                           </div>
-                        ) : (
-                          <div className="text-sm text-muted-foreground">
-                            Precio: ${item.price.toLocaleString()}
-                          </div>
-                        )}
+                          <p className="text-sm font-medium text-[#FF6B1E]">
+                            ${item.price.toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}
